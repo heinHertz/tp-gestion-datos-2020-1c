@@ -82,9 +82,17 @@
 			IF OBJECT_ID('dbo.clienteBACKUP', 'U') IS NOT NULL
 			DROP TABLE dbo.clienteBACKUP
 
-			
+						
 			IF OBJECT_ID('dbo.compraBACKUP', 'U') IS NOT NULL
-			DROP TABLE dbo.clienteBACKUP
+			DROP TABLE dbo.compraBACKUP
+
+			
+			IF OBJECT_ID('dbo.estadiaBACKUP', 'U') IS NOT NULL
+			DROP TABLE dbo.estadiaBACKUP
+
+			
+			IF OBJECT_ID('dbo.estadiaBACKUP2', 'U') IS NOT NULL
+			DROP TABLE dbo.estadiaBACKUP2
 
 ---------------------------------------------------DROP TRIGGERS------------------------------------------------
 			
@@ -105,6 +113,19 @@
 
 				CREATE TABLE [dbo].[compra](
 					[ID_COMPRA] [bigint] IDENTITY(1,1) NOT NULL,
+					[COMPRA_NUMERO] [decimal](18, 0) NULL,
+					[COMPRA_FECHA] [datetime2](3) NULL,
+					[ID_EMPRESA] [bigint] NULL,
+					[ID_ESTADIA] [bigint] NULL,
+					[ID_BUTACA] [bigint] NULL,
+					[ID_TIPO_COMPRA] [bigint] NULL
+				) ON [PRIMARY]
+
+--------------------------------------------------COMPRA BACKUP--------------------------------------------------------------------
+
+
+				CREATE TABLE [dbo].[compraBACKUP](
+				--	[ID_COMPRA] [bigint] IDENTITY(1,1) NOT NULL,
 					[COMPRA_NUMERO] [decimal](18, 0) NULL,
 					[COMPRA_FECHA] [datetime2](3) NULL,
 					[ID_EMPRESA] [bigint] NULL,
@@ -323,11 +344,13 @@
 					create trigger llenador_Compra_butacas      
 						on butacas 
 						after insert
-		
 					as
 						begin 
 
-						INSERT INTO compra(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	) SELECT  
+						truncate table  compraBACKUP
+
+
+						INSERT INTO compraBACKUP(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	) SELECT  
 						( SELECT TOP 1 COMPRA_NUMERO from gd_esquema.Maestra LL join pasajes ss on LL.PASAJE_CODIGO=ss.PASAJE_CODIGO and ss.id_pasaje=inx.id_pasaje	),
 						 ( SELECT top 1 mm.COMPRA_FECHA FROM gd_esquema.Maestra mm join pasajes ss on mm.PASAJE_CODIGO=ss.PASAJE_CODIGO and ss.id_pasaje=inx.id_pasaje),
 						 ( SELECT top 1 epp.ID_EMPRESA FROM  gd_esquema.Maestra ff join empresa epp on  epp.EMPRESA_RAZON_SOCIAL=ff.EMPRESA_RAZON_SOCIAL join pasajes ps on ps.PASAJE_CODIGO=ff.PASAJE_CODIGO and inx.id_pasaje=ps.id_pasaje ),
@@ -335,10 +358,16 @@
 						inx.id_butaca, -- ( select b.id_butaca from butacas b where b.id_butaca =inx.id_butaca  ) as dd,
 						 1
 						  FROM inserted  inx where inx.BUTACA_NUMERO is not null
-		
-						end
-		
-		
+					
+					INSERT INTO compra(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	)
+					 SELECT *
+					 FROM compraBACKUP cc
+					 order by abs(cc.COMPRA_NUMERO)
+					 offset 0 rows
+					
+					truncate table compraBACKUP
+					
+					end
 	
 					go
 					
@@ -353,7 +382,9 @@
 					as
 						begin 
 
-						INSERT INTO compra(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	) SELECT  
+						truncate table compraBACKUP
+
+						INSERT INTO compraBACKUP(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	) SELECT  
 						( SELECT TOP 1 COMPRA_NUMERO from gd_esquema.Maestra LL where LL.ESTADIA_CODIGO=inx.ESTADIA_CODIGO and inx.ESTADIA_FECHA_INI=LL.ESTADIA_FECHA_INI 	),
 						 ( SELECT top 1 LL.COMPRA_FECHA FROM gd_esquema.Maestra LL where LL.ESTADIA_CODIGO=inx.ESTADIA_CODIGO and inx.ESTADIA_FECHA_INI=LL.ESTADIA_FECHA_INI    ),
 						  inx.id_empresa, -- ( SELECT top 1 epp.ID_EMPRESA FROM  gd_esquema.Maestra ff join empresa epp on  epp.EMPRESA_RAZON_SOCIAL=ff.EMPRESA_RAZON_SOCIAL join pasajes ps on ps.PASAJE_CODIGO=ff.PASAJE_CODIGO and inx.id_pasaje=ps.id_pasaje ),
@@ -362,6 +393,16 @@
 							1
 						  FROM inserted  inx where inx.ESTADIA_CODIGO is not null
 		
+					INSERT INTO compra(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	)
+					 SELECT *
+					 FROM compraBACKUP cc
+					 order by abs(cc.COMPRA_NUMERO)
+					 offset 0 rows
+					
+					truncate table compraBACKUP
+
+
+
 						end
 		
 		
@@ -391,7 +432,7 @@
 				if exists (select name from sysindexes   where name = 'ix__pasajeES')   drop index ix__pasajeES ON pasajes
 				CREATE INDEX ix__pasajeES ON pasajes (  PASAJE_CODIGO )
 
-
+			
 -------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------CREAMOS TRIGGER SOBRE FACTURA---------------select * from compra---------------
@@ -403,8 +444,9 @@
 					as
 						begin 
 
+						truncate table compraBACKUP
 		
-						INSERT INTO compraBAK(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	) SELECT  
+						INSERT INTO compraBACKUP(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	) SELECT  
 					bss.COMPRA_NUMERO 	, --( SELECT TOP 1 COMPRA_NUMERO from gd_esquema.Maestra LL where LL.FACTURA_NRO=inx.FACTURA_NRO and inx.FACTURA_FECHA=LL.FACTURA_FECHA  	),
 					bss.COMPRA_FECHA	  , --( SELECT top 1 LL1.COMPRA_FECHA FROM gd_esquema.Maestra LL1  where LL1.FACTURA_NRO=inx.FACTURA_NRO and inx.FACTURA_FECHA=LL1.FACTURA_FECHA  	 ),
 					 ( SELECT top 1 epp.ID_EMPRESA FROM empresa epp where  epp.EMPRESA_RAZON_SOCIAL=bss.EMPRESA_RAZON_SOCIAL  )  ,
@@ -413,6 +455,14 @@
 							2
 						  FROM factura  inx join  gd_esquema.Maestra bss on inx.FACTURA_NRO=bss.FACTURA_NRO and inx.FACTURA_NRO is not null -- FROM inserted  inx where inx.FACTURA_NRO is not null
 		
+		
+					INSERT INTO compra(COMPRA_NUMERO, COMPRA_FECHA, ID_EMPRESA,  ID_ESTADIA, ID_BUTACA, ID_TIPO_COMPRA	)
+					 SELECT *
+					 FROM compraBACKUP cc
+					 order by abs(cc.COMPRA_NUMERO)
+					 offset 0 rows
+
+					 truncate table compraBACKUP
 
 						end
 			
@@ -802,5 +852,4 @@
 				--	drop index ix_cliente  ON cliente    --BORRO EL INDICE PARA MANTENER LIMPIA LA BASE DE DATOS, PERO LA RALENTIZA
 					drop table facturaBACKUP				-- BORRO LA TABLA AUXILIAR FACTURABACKUP
 				 
-
 
