@@ -815,8 +815,45 @@ go
 						) DD
 						--CONSULTA MUY LENTA
 			
-				--	drop index ix_cliente  ON cliente    --BORRO EL INDICE PARA MANTENER LIMPIA LA BASE DE DATOS, PERO LA RALENTIZA
+					drop index ix_cliente  ON [LOS_DATEROS].cliente    --BORRO EL INDICE PARA MANTENER LIMPIA LA BASE DE DATOS, PERO LA RALENTIZA
 					drop table [LOS_DATEROS].facturaBACKUP				-- BORRO LA TABLA AUXILIAR FACTURABACKUP
 				 
+
+
+				 ---		  create  cliente     factura    ingtresar suscursal   pasaje hotel   butaca 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
