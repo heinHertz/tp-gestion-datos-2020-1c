@@ -282,9 +282,9 @@ go
 			-- ESTA FORMA DIFERENCIO LA VENTA DE UNA COMPRA AL SEPARARLOS POR EL TIPO DE CLIENTE , 
 			---TENIENDO UNA ENTIDAD COMPRA SOLA PARA SIMPLICIDAD DEL SISTEMA
 
-			insert into [LOS_DATEROS].tipo_compra(TIPO_COMPRA)  values('PROVEEDOR')
+			insert into [LOS_DATEROS].tipo_compra(TIPO_COMPRA)   values('PROVEEDOR')
 
-			insert into [LOS_DATEROS].tipo_compra(TIPO_COMPRA)  values('CLIENTE')
+			insert into [LOS_DATEROS].tipo_compra(TIPO_COMPRA)   values('CLIENTE')
 
 ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -372,9 +372,9 @@ go
 	
 					go
 
--------------------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------------------------------------------------					
--------------------------------------------------------------------------------------------------------------------------------------------------------					
+---------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------					
+---------------------------------------------------------------------------------------------------------------------------------------------					
 					
 				if exists (select name from sysindexes   where name = 'ix_estadia')   drop index ix_estadia ON [LOS_DATEROS].estadia
 				CREATE INDEX ix_estadia ON [LOS_DATEROS].estadia (	ESTADIA_CODIGO)
@@ -794,13 +794,7 @@ go
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------
-/*
 
-go
-Create procedure compraPasaje @numeroF CHAR(8), @codProducto CHAR(8), @cantAVender DECIMAL(12,2), @codDeposito CHAR(2),@esUltimo BIT
-AS
-begin
-	exec insertarGenerico 'E','0001',@numeroF,@codProducto, @cantAVender, @codDeposito,@esUltimo
-end
-go
-*/
+
+
+
