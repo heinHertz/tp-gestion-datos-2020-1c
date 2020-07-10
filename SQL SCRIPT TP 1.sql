@@ -763,7 +763,7 @@ go
 		ALTER TABLE [LOS_DATEROS].compra  drop column NRO_FACTURA 
 				 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-				 ---		  -create  cliente     -factura    -ingresar suscursal   pasaje  hotel   butaca 
+				 ---		  --create  cliente     --factura  --suscursal pasaje  hotel   butaca 
 				-- create function LOS_DATEROS.hotelTieneReserva
 				-- comprobar estadia   comprobar butaca      comprobar vuelo 
 						--  -buscar cliente     buscar hotel     buscar  
@@ -788,9 +788,16 @@ DROP PROCEDURE habitacionReservas
 IF OBJECT_ID('hotelReservas','P') IS NOT NULL
 DROP PROCEDURE hotelReservas
 
------------------------------------------------------------------------------------------
-----------------------------------Procedures---------------------------------------------
------------------------------------------------------------------------------------------
+IF OBJECT_ID('crearHotel','P') IS NOT NULL
+DROP PROCEDURE crearHotel
+
+IF OBJECT_ID('crearPasaje','P') IS NOT NULL
+DROP PROCEDURE crearPasaje
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------Procedures-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
 --Los procedures los hice teniendo en cuenta temas como que el que hace las consultas no sabe el id, sino que conoce ponele el nombre y dni
 
 use GD1C2020
@@ -835,7 +842,7 @@ use GD1C2020
 			as
 			begin
 					declare @sucursal as bigint = (Select id_sucursal from LOS_DATEROS.sucursal suc where suc.SUCURSAL_DIR=@sucursalDir)            
-					declare @facturaNumero as decimal(18,0) =(SELECT TOP 1 FACTURA_NRO from LOS_DATEROS.factura WHERE (idsucursal = @sucursal))+1    -- Busco la ultima factura de la sucursal y le sumo 1
+					declare @facturaNumero as decimal(18,0) =(SELECT TOP 1 FACTURA_NRO from LOS_DATEROS.factura WHERE (idsucursal = @sucursal) ORDER BY FACTURA_NRO DESC)+1    -- Busco la ultima factura de la sucursal y le sumo 1
 					declare @idcliente as bigint = (SELECT TOP 1 ID_CLIENTE from LOS_DATEROS.cliente c where (c.CLIENTE_DNI = @clienteDni and c.CLIENTE_APELLIDO=@clienteApellido))
 	
 							INSERT INTO LOS_DATEROS.factura(FACTURA_NRO,FACTURA_FECHA) --No sabía si tenía que poner la fecha de hoy o alguna otra
@@ -856,7 +863,7 @@ use GD1C2020
 	go
 
 	--Ejemplo de si habitacionReservas para alguna habitación
-	exec habitacionReservas @calle = 'Avenida Juan Agustín García', @nro = 22863, @habitacion = 38  
+	--exec habitacionReservas @calle = 'Avenida Juan Agustín García', @nro = 22863, @habitacion = 38  
 
 	go
 		create procedure hotelReservas @calle nvarchar(50), @nro decimal(18,0)
@@ -873,12 +880,27 @@ use GD1C2020
 	--Ejemplo de si hotelReservas para alguna habitación
 	--exec hotelReservas @calle = 'Avenida Juan Agustín García', @nro = 22863
 
+	go
+		create procedure crearHotel @calle nvarchar(50), @nro decimal(18,0), @estrellas decimal(18,0)	
+		as																								--No se si hace falta algo más xd
+		begin
+			INSERT INTO LOS_DATEROS.hotel(HOTEL_CALLE,HOTEL_NRO_CALLE,HOTEL_CANTIDAD_ESTRELLAS) 
+			values(@calle,@nro,@estrellas)
+		end		
+	go
 
-
-
-
-
-
+	go
+		create procedure crearPasaje @costo nvarchar(50), @precio decimal(18,0), @idVuelo decimal(18,0)	
+		as																								--No se el idvuelo está bien que lo agarre así nomas o hace falta pasar el destino, la fecha, etc etc
+		begin
+			if((Select COUNT(1) from Los_dateros.vuelo v where (v.id_vuelo= @idVuelo)) = 1) begin
+			declare @codigo as decimal(18,0) = ((Select TOP 1 pasaje_codigo from LOS_DATEROS.pasajes ORDER BY PASAJE_CODIGO desc) + 1)
+			INSERT INTO LOS_DATEROS.pasajes(PASAJE_CODIGO,PASAJE_PRECIO,PASAJE_COSTO,ID_VUELO) 
+			values(@codigo,@costo,@precio,@idVuelo)
+			end
+		end		
+	go
+	
 
 
 
