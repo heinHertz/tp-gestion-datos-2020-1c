@@ -763,14 +763,35 @@ go
 		ALTER TABLE [LOS_DATEROS].compra  drop column NRO_FACTURA 
 				 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-				 ---		  create  cliente     factura    ingresar suscursal   pasaje  hotel   butaca 
+				 ---		  -create  cliente     -factura    -ingresar suscursal   pasaje  hotel   butaca 
 				-- create function LOS_DATEROS.hotelTieneReserva
 				-- comprobar estadia   comprobar butaca      comprobar vuelo 
-						--  buscar cliente     buscar hotel     buscar  
+						--  -buscar cliente     buscar hotel     buscar  
+
+----------------------------DROP DE LOS PROCEDURES--------------------------------------
+
+IF OBJECT_ID('crearCLiente','P') IS NOT NULL
+	DROP PROCEDURE crearCliente
+
+IF OBJECT_ID('buscarCLiente','P') IS NOT NULL
+	DROP PROCEDURE buscarCliente
+
+IF OBJECT_ID('ingresarSucursal','P') IS NOT NULL
+	DROP PROCEDURE ingresarSucursal
+
+IF OBJECT_ID('crearFactura','P') IS NOT NULL
+DROP PROCEDURE crearFactura
+
+IF OBJECT_ID('habitacionReservas','P') IS NOT NULL
+DROP PROCEDURE habitacionReservas
+
+IF OBJECT_ID('hotelReservas','P') IS NOT NULL
+DROP PROCEDURE hotelReservas
 
 -----------------------------------------------------------------------------------------
 ----------------------------------Procedures---------------------------------------------
 -----------------------------------------------------------------------------------------
+--Los procedures los hice teniendo en cuenta temas como que el que hace las consultas no sabe el id, sino que conoce ponele el nombre y dni
 
 use GD1C2020
 	go
@@ -822,14 +843,35 @@ use GD1C2020
 			end
 	go
 
+	go
+		create procedure habitacionReservas @calle nvarchar(50), @nro decimal(18,0), @habitacion decimal(18,0)
+		as
+		begin
+			select ESTADIA_CODIGO as 'Codigo Estadía',ESTADIA_FECHA_INI as 'Fecha de Inicio',ESTADIA_CANTIDAD_NOCHES as 'Cantidad de Noches'	-- Por ahora puse que se muestre esto, no se si hace falta algo más
+			from LOS_DATEROS.estadia e 
+			join LOS_DATEROS.habitacion h on e.id_habitacion=h.ID_HABITACION
+			join LOS_DATEROS.hotel hot on h.id_hotel = hot.ID_HOTEL
+			where hot.HOTEL_CALLE=@calle and hot.HOTEL_NRO_CALLE=@nro and h.HABITACION_NUMERO=@habitacion
+		end		
+	go
 
+	--Ejemplo de si habitacionReservas para alguna habitación
+	exec habitacionReservas @calle = 'Avenida Juan Agustín García', @nro = 22863, @habitacion = 38  
 
+	go
+		create procedure hotelReservas @calle nvarchar(50), @nro decimal(18,0)
+		as
+		begin
+			select ESTADIA_CODIGO,ESTADIA_FECHA_INI,ESTADIA_CANTIDAD_NOCHES,HABITACION_NUMERO,HABITACION_PISO -- Por ahora puse que se muestre esto, no se si hace falta algo más
+			from LOS_DATEROS.estadia e 
+			join LOS_DATEROS.habitacion h on e.id_habitacion=h.ID_HABITACION
+			join LOS_DATEROS.hotel hot on h.id_hotel = hot.ID_HOTEL
+			where hot.HOTEL_CALLE=@calle and hot.HOTEL_NRO_CALLE=@nro
+		end		
+	go
 
-
-
-
-
-
+	--Ejemplo de si hotelReservas para alguna habitación
+	--exec hotelReservas @calle = 'Avenida Juan Agustín García', @nro = 22863
 
 
 
