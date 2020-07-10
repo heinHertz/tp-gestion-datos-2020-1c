@@ -7,7 +7,7 @@
 		SET QUOTED_IDENTIFIER ON
 		GO
 
-
+--------------------------------------------------------------------------------------------------------------
 ----------------------------------------------DROP DE TABLES SI EXISTEN---------------------------------------
 if exists (select * from sys.schemas where name =  'LOS_DATEROS')
 begin
@@ -61,8 +61,7 @@ begin
 			
 			IF OBJECT_ID('LOS_DATEROS.sucursal', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.sucursal
-
-------------------------------------------------	DROP AUXILIARES--------------------------
+-------------------------------------------DROP AUXILIARES----------------------------------------------
 			IF OBJECT_ID('LOS_DATEROS.ciudadBACKUP', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.ciudadBACKUP
 
@@ -94,7 +93,8 @@ begin
 			
 			IF OBJECT_ID('LOS_DATEROS.estadiaBACKUP2', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.estadiaBACKUP2
---------------------------------------------------FIN AUXILIARES----------------------------------------------
+
+----------------------------------------------FIN AUXILIARES-----------------------------------------------
 end
 else
 begin
@@ -102,7 +102,7 @@ begin
 	print 'Esquema [LOS_DATEROS] creado'
 end
 go
----------------------------------------------------DROP TRIGGERS------------------------------------------------
+---------------------------------------------DROP TRIGGERS--------------------------------------------------
 			
 		if exists (select name from sysindexes   where name = 'llenador_Compra_estadia')   drop trigger [LOS_DATEROS].llenador_Compra_estadia
 		
@@ -110,88 +110,81 @@ go
 			
 		if exists (select name from sysindexes   where name = 'llenador_Compra_factura')   drop trigger [LOS_DATEROS].llenador_Compra_factura
 	
----------------------------------------------------	CIUDAD-------------------------------------------------
+------------------------------------------------CIUDAD------------------------------------------------------
 
 			CREATE TABLE [LOS_DATEROS].[ciudad](
 				[id_ciudad] [bigint] IDENTITY(1,1) NOT NULL,
 				[nombre] [nvarchar](255) NULL )
 			--CREO LA TABLA ciudad 
-------------------------------------------------------COMPRA--------------------------------------------------------------------
 
+------------------------------------------------COMPRA--------------------------------------------------------
 
-				CREATE TABLE [LOS_DATEROS].[compra](
-					[ID_COMPRA] [bigint] IDENTITY(1,1) NOT NULL,
-					[COMPRA_NUMERO] [decimal](18, 0) NULL,
-					[COMPRA_FECHA] [datetime2](3) NULL,
-					[ID_EMPRESA] [bigint] NULL,
-					[ID_ESTADIA] [bigint] NULL,
-					[ID_BUTACA] [bigint] NULL,
-					[ID_TIPO_COMPRA] [bigint] NULL,
-					[NRO_FACTURA] decimal(18,0) null
-				) ON [PRIMARY]
+			CREATE TABLE [LOS_DATEROS].[compra](
+				[ID_COMPRA] [bigint] IDENTITY(1,1) NOT NULL,
+				[COMPRA_NUMERO] [decimal](18, 0) NULL,
+				[COMPRA_FECHA] [datetime2](3) NULL,
+				[ID_EMPRESA] [bigint] NULL,
+				[ID_ESTADIA] [bigint] NULL,
+				[ID_BUTACA] [bigint] NULL,
+				[ID_TIPO_COMPRA] [bigint] NULL,
+				[NRO_FACTURA] decimal(18,0) null
+			) ON [PRIMARY]
 
-
-
- ------------------------------------EMPRESA--------------------------------------------------------
+-----------------------------------------------EMPRESA--------------------------------------------------------
 
 		CREATE TABLE [LOS_DATEROS].[empresa](
 			[ID_EMPRESA] [bigint] identity(1,1) not NULL,
 			[EMPRESA_RAZON_SOCIAL] [nvarchar](255) NULL
 		) ON [PRIMARY]
------------------------------------------BUTACAS-------------------------------------------------------
 
-			CREATE TABLE [LOS_DATEROS].[butacas](
-				[id_butaca] [bigint] identity(1,1) not NULL,
-				[ID_BUTACA_TIPO] [nvarchar](255) NULL,
-				[BUTACA_NUMERO] [decimal](18, 0) NULL,
-				[id_pasaje] [bigint] NULL,
-				[id_avion] [bigint] NULL
-			) ON [PRIMARY]
-
-
+------------------------------------------------BUTACAS-------------------------------------------------------
+		
+		CREATE TABLE [LOS_DATEROS].[butacas](
+			[id_butaca] [bigint] identity(1,1) not NULL,
+			[ID_BUTACA_TIPO] [nvarchar](255) NULL,
+			[BUTACA_NUMERO] [decimal](18, 0) NULL,
+			[id_pasaje] [bigint] NULL,
+			[id_avion] [bigint] NULL
+		) ON [PRIMARY]
 			
-----------------------------------------------------TIPO  BUTACA---------------------------------------------------------------------------------
-
-		 CREATE TABLE [LOS_DATEROS].tipo_butacas(
+-----------------------------------------------TIPO BUTACAS---------------------------------------------------
+		
+		CREATE TABLE [LOS_DATEROS].tipo_butacas(
 			[id_tipo_butaca] [bigint] identity(1,1) not NULL,
 			[BUTACA_TIPO] [nvarchar](255) NULL 
-			)
---------------------------------------------HABITACION-------------------------------------------------------------
+		)
 
+-----------------------------------------------HABITACION------------------------------------------------------
 
-				CREATE TABLE [LOS_DATEROS].[habitacion](
-					[ID_HABITACION] [bigint] identity(1,1) not NULL,
-					[HABITACION_NUMERO] [decimal](18, 0) NULL,
-					[HABITACION_PISO] [decimal](18, 0) NULL,
-					[HABITACION_FRENTE] [nvarchar](50) NULL,
-					[HABITACION_PRECIO] [decimal](18, 2) NULL,
-					[HABITACION_COSTO] [decimal](18, 2) NULL,
-					[id_hotel] [bigint] NULL,
-					[id_tipo_habitacion] [bigint] NULL
+		CREATE TABLE [LOS_DATEROS].[habitacion](
+			[ID_HABITACION] [bigint] identity(1,1) not NULL,
+			[HABITACION_NUMERO] [decimal](18, 0) NULL,
+			[HABITACION_PISO] [decimal](18, 0) NULL,
+			[HABITACION_FRENTE] [nvarchar](50) NULL,
+			[HABITACION_PRECIO] [decimal](18, 2) NULL,
+			[HABITACION_COSTO] [decimal](18, 2) NULL,
+			[id_hotel] [bigint] NULL,
+			[id_tipo_habitacion] [bigint] NULL
 
-					)ON [PRIMARY]
+		)ON [PRIMARY]
 
-----------------------------------------------TIPO HABITACION-------------------------------------------------------
+--------------------------------------------TIPO HABITACION-----------------------------------------------------
 
+		CREATE TABLE [LOS_DATEROS].[tipo_habitacion](
+			[ID_TIPO_HABITACION] [bigint] identity(1,1) not NULL,
+			[TIPO_HABITACION_DESC] [nvarchar](50) NULL,
+			[TIPO_HABITACION_CODIGO] [decimal](18, 0) NULL
+		) ON [PRIMARY]
 
-							CREATE TABLE [LOS_DATEROS].[tipo_habitacion](
-								[ID_TIPO_HABITACION] [bigint] identity(1,1) not NULL,
-								[TIPO_HABITACION_DESC] [nvarchar](50) NULL,
-								[TIPO_HABITACION_CODIGO] [decimal](18, 0) NULL
-							) ON [PRIMARY]
--------------------------------------------------AVION----------------------------------------------------------
-
-		USE [GD1C2020]
-		GO
+-------------------------------------------------AVION-----------------------------------------------------------
 
 		CREATE TABLE [LOS_DATEROS].[avion](
 			[id_avion] [bigint] IDENTITY(1,1) not NULL,
 			[AVION_MODELO] [nvarchar](50) NULL,
 			[AVION_IDENTIFICADOR] [nvarchar](50) NULL
 		) ON [PRIMARY]
-				-- CREO LA TABLA avion
 
--------------------------------------RUTA AEREA-------------------------------------------------------------------------
+----------------------------------------------RUTA AEREA---------------------------------------------------------
 
 		CREATE TABLE [LOS_DATEROS].[ruta_aerea](
 			[id_ruta_aerea] [bigint] IDENTITY(1,1) not NULL,
@@ -199,11 +192,8 @@ go
 			[idorig] [bigint] NOT NULL,
 			[iddest] [bigint] NOT NULL
 		) ON [PRIMARY]
-		-- CREO LA TABLA ruta_aerea-
-		
 
- ---------------------------------------------VUELO ---------------------------------------------------------
-
+ -----------------------------------------------VUELO------------------------------------------------------------
 
 		 CREATE TABLE [LOS_DATEROS].[vuelo](
 			[id_vuelo] [bigint] identity(1,1) not NULL,
@@ -212,8 +202,8 @@ go
 			[VUELO_FECHA_SALUDA] [datetime2](3) NULL,
 			[id_ruta_aerea] [bigint] NULL
 		) ON [PRIMARY]
---------------------------------PASAJES-------------------------------------------------------
 
+------------------------------------------------PASAJES----------------------------------------------------------
 
 		CREATE TABLE [LOS_DATEROS].[pasajes](
 			[id_pasaje] [bigint] IDENTITY(1,1)NOT NULL,
@@ -223,91 +213,78 @@ go
 			[ID_VUELO] [decimal](19, 0) NULL
 		) ON [PRIMARY]
 		
-		
 			
----------------------------------------------FACTURA-----------------------------------------------------------------------------
+------------------------------------------------FACTURA-----------------------------------------------------------
 
+		CREATE TABLE [LOS_DATEROS].[factura](
+			[ID_FACTURA] [bigint] identity(1,1) not NULL,
+			[FACTURA_NRO] [decimal](18, 0) NULL,
+			[FACTURA_FECHA] [datetime2](3) NULL,
+			[id_cliente] [bigint] NULL,
+			[idsucursal] [bigint] NULL,
+			[compra_Numero] [decimal](18,0) NULL
+		) ON [PRIMARY]
 
-					CREATE TABLE [LOS_DATEROS].[factura](
-						[ID_FACTURA] [bigint] identity(1,1) not NULL,
-						[FACTURA_NRO] [decimal](18, 0) NULL,
-						[FACTURA_FECHA] [datetime2](3) NULL,
-						[id_cliente] [bigint] NULL,
-						[idsucursal] [bigint] NULL,
-						[id_compra] [bigint] NULL
-					) ON [PRIMARY]
+-------------------------------------------------HOTEL-------------------------------------------------------------
 
--------------------------------------HOTEL---------------------------------------------------------------
+		CREATE TABLE [LOS_DATEROS].[hotel](
+			[ID_HOTEL] [bigint] identity(1,1) not NULL,
+			[HOTEL_CALLE] [nvarchar](50) NULL,
+			[HOTEL_NRO_CALLE] [decimal](18, 0) NULL,
+			[HOTEL_CANTIDAD_ESTRELLAS] [decimal](18, 0) NULL
+		) ON [PRIMARY]
 
-						CREATE TABLE [LOS_DATEROS].[hotel](
-							[ID_HOTEL] [bigint] identity(1,1) not NULL,
-							[HOTEL_CALLE] [nvarchar](50) NULL,
-							[HOTEL_NRO_CALLE] [decimal](18, 0) NULL,
-							[HOTEL_CANTIDAD_ESTRELLAS] [decimal](18, 0) NULL
-						) ON [PRIMARY]
-
-------------------------------------SUCURSAL----------------------------------------------------------
-
+-----------------------------------------------SUCURSAL------------------------------------------------------------
 	
-								CREATE TABLE [LOS_DATEROS].[sucursal](
-									[id_sucursal] [bigint] identity(1,1) not NULL,
-									[SUCURSAL_DIR] [nvarchar](255) NULL,
-									[SUCURSAL_MAIL] [nvarchar](255) NULL,
-									[SUCURSAL_TELEFONO] [decimal](18, 0) NULL
-								) ON [PRIMARY]
+		CREATE TABLE [LOS_DATEROS].[sucursal](
+			[id_sucursal] [bigint] identity(1,1) not NULL,
+			[SUCURSAL_DIR] [nvarchar](255) NULL,
+			[SUCURSAL_MAIL] [nvarchar](255) NULL,
+			[SUCURSAL_TELEFONO] [decimal](18, 0) NULL
+		) ON [PRIMARY]
 
+-----------------------------------------------ESTADIA--------------------------------------------------------------
 
-------------------------------------------------------ESTADIA--------------------------------------------------------------
+		CREATE TABLE [LOS_DATEROS].[estadia](			
+			[ID_ESTADIA] [bigint] identity(1,1) not NULL,
+			[ESTADIA_CODIGO] [decimal](18, 0) NULL,
+			[ESTADIA_FECHA_INI] [datetime2](3) NULL,
+			[ESTADIA_CANTIDAD_NOCHES] [decimal](18, 0) NULL,
+			[id_empresa] [bigint] NULL,
+			[id_habitacion] [bigint] NULL
+		) ON [PRIMARY]
 
+-----------------------------------------------CLIENTE--------------------------------------------------------------
 
+		CREATE TABLE [LOS_DATEROS].[cliente](				
+			[ID_CLIENTE] [bigint] identity(1,1) not NULL,
+			[CLIENTE_DNI] [decimal](18, 0) NULL,
+			[CLIENTE_NOMBRE] [nvarchar](255) NULL,
+			[CLIENTE_APELLIDO] [nvarchar](255) NULL,
+			[CLIENTE_FECHA_NAC] [datetime2](3) NULL,
+			[CLIENTE_TELEFONO] [int] NULL,
+			[CLIENTE_MAIL] [nvarchar](255) NULL
+		) ON [PRIMARY]						
 
-					CREATE TABLE [LOS_DATEROS].[estadia](			
-						[ID_ESTADIA] [bigint] identity(1,1) not NULL,
-						[ESTADIA_CODIGO] [decimal](18, 0) NULL,
-						[ESTADIA_FECHA_INI] [datetime2](3) NULL,
-						[ESTADIA_CANTIDAD_NOCHES] [decimal](18, 0) NULL,
-						[id_empresa] [bigint] NULL,
-						[id_habitacion] [bigint] NULL
-					) ON [PRIMARY]
+--------------------------------------------TIPO DE COMPRA-----------------------------------------------------------
 
+		CREATE TABLE [LOS_DATEROS].tipo_compra(
+			[ID_TIPO_COMPRA] [bigint] identity(1,1) not NULL,
+			[TIPO_COMPRA] [nvarchar](15) NULL
+		) ON [PRIMARY]
 
-------------------------------------------------------CLIENTE--------------------------------------------------------------------------
+		--	SOLAMENTE DOS TIPOS DE COMPRA,  AL PROVEEDOR QUIEN ME VENDE LAS ESTADIAS O PASAJES
+		--  Y EL CLIENTE, QUIEN ME COMPRA A MI LAS ESTADIAS O PASAJES
+		-- ESTA FORMA DIFERENCIO LA VENTA DE UNA COMPRA AL SEPARARLOS POR EL TIPO DE CLIENTE , 
+		---TENIENDO UNA ENTIDAD COMPRA SOLA PARA SIMPLICIDAD DEL SISTEMA
 
-							CREATE TABLE [LOS_DATEROS].[cliente](				
-								[ID_CLIENTE] [bigint] identity(1,1) not NULL,
-								[CLIENTE_DNI] [decimal](18, 0) NULL,
-								[CLIENTE_NOMBRE] [nvarchar](255) NULL,
-								[CLIENTE_APELLIDO] [nvarchar](255) NULL,
-								[CLIENTE_FECHA_NAC] [datetime2](3) NULL,
-								[CLIENTE_TELEFONO] [int] NULL,
-								[CLIENTE_MAIL] [nvarchar](255) NULL
-							) ON [PRIMARY]
+		insert into [LOS_DATEROS].tipo_compra(TIPO_COMPRA)  values('PROVEEDOR')
+		insert into [LOS_DATEROS].tipo_compra(TIPO_COMPRA)  values('CLIENTE')
 
+-------------------------------------------------------------------------------------------------------------
 
-						
-
-----------------------------------------------------------TIPO DE COMPRA--------------------------------------------------------------------------
-
-									CREATE TABLE [LOS_DATEROS].tipo_compra(
-										[ID_TIPO_COMPRA] [bigint] identity(1,1) not NULL,
-										[TIPO_COMPRA] [nvarchar](15) NULL
-									) ON [PRIMARY]
-
-									--	SOLAMENTE DOS TIPOS DE COMPRA,  AL PROVEEDOR QUIEN ME VENDE LAS ESTADIAS O PASAJES
-									--  Y EL CLIENTE, QUIEN ME COMPRA A MI LAS ESTADIAS O PASAJES
-									-- ESTA FORMA DIFERENCIO LA VENTA DE UNA COMPRA AL SEPARARLOS POR EL TIPO DE CLIENTE , 
-									---TENIENDO UNA ENTIDAD COMPRA SOLA PARA SIMPLICIDAD DEL SISTEMA
-
-									insert into [LOS_DATEROS].tipo_compra(TIPO_COMPRA)  values('PROVEEDOR')
-
-									insert into [LOS_DATEROS].tipo_compra(TIPO_COMPRA)  values('CLIENTE')
---------------------------------------------------------------------------------------------------------------
-
-
-				if exists (select name from sysindexes   where name = 'ix_pasaje_codigo')   drop index ix_pasaje_codigo ON gd_esquema.Maestra	
-				CREATE INDEX ix_pasaje_codigo	ON gd_esquema.Maestra (	PASAJE_CODIGO, EMPRESA_RAZON_SOCIAL)
-						
-
+		if exists (select name from sysindexes   where name = 'ix_pasaje_codigo')   drop index ix_pasaje_codigo ON gd_esquema.Maestra	
+		CREATE INDEX ix_pasaje_codigo	ON gd_esquema.Maestra (	PASAJE_CODIGO, EMPRESA_RAZON_SOCIAL)
 
 
 ----------------------------------------------------------CREAMOS TRIGGER SOBRE PASAJE---------------select * from compra---------------
@@ -330,12 +307,8 @@ go
 		
 						end
 		
-		
-	
 					go
 					*/
---------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------CREAMOS TRIGGER SOBRE BUTACAS---------------select * from compra---------------
 					go
 					create trigger llenador_Compra_butacas      
@@ -360,9 +333,8 @@ go
 	
 					go
 					
--------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------CREAMOS TRIGGER SOBRE ESTADIA---------------select * from compra---------------
+					
 					go
 					create trigger llenador_Compra_estadia      
 						on [LOS_DATEROS].estadia 
@@ -380,9 +352,7 @@ go
 							1
 						  FROM inserted  inx where inx.ESTADIA_CODIGO is not null
 		
-						end
-		
-		
+						end	
 	
 					go
 
@@ -435,24 +405,20 @@ go
 					
 						--obligaFmos al la tabla factura a actualizarse
 						
-						UPDATE [LOS_DATEROS].factura set [LOS_DATEROS].factura.id_compra = com.ID_COMPRA  from [LOS_DATEROS].compra com 
-						where [LOS_DATEROS].factura.FACTURA_NRO=com.NRO_FACTURA and  com.ID_COMPRA  is not null
+						UPDATE [LOS_DATEROS].factura set [LOS_DATEROS].factura.id_compra = com.COMPRA_NUMERO from [LOS_DATEROS].compra com 
+						where [LOS_DATEROS].factura.FACTURA_NRO=com.NRO_FACTURA and  com.COMPRA_NUMERO  is not null
 						
-					--	ALTER TABLE compra  drop column NRO_FACTURA 
-		
-						
-
+						--	ALTER TABLE compra  drop column NRO_FACTURA 
+								
 						--UPDATE [LOS_DATEROS].factura  set [LOS_DATEROS].factura.id_compra= com.ID_COMPRA  from [LOS_DATEROS].compra com  join gd_esquema.Maestra gd
 						--on 
-						--where gd.PASAJE_CODIGO is not null
-						
-
+						--where gd.PASAJE_CODIGO is not null						
 
 						end
 			
 					go
+------------------------------------------CUERPO DE CIUDAD----------------------------------------------------
 
------------------------------------------CUERPO DE CIUDAD-----------------------------------------
 			SELECT * INTO [LOS_DATEROS].ciudadBACKUP
 				from (
 					Select RUTA_AEREA_CIU_ORIG from  gd_esquema.Maestra
@@ -462,82 +428,71 @@ go
 			--CREO LA TABLA CIUDADBACKUP, ME SIRVE PARA GUARDAR TEMPORALMENTE LOS VALORES DE ciudad
 			-- ESTE EXTRAE LA CIUDAD DE LAS DOS RUTAS HACIENDO UNA UNION ENTRE LAS DOS TABLAS PARA UTILIZAR TODAS LAS ciudad
 
-
 			--  RELLENO LA TABLA ciudad VACIA DE LOS DATOS QUE ALMACENE EN LA TABLA CIUDADBAKUP
 			insert into [LOS_DATEROS].ciudad(nombre)  select * from [LOS_DATEROS].ciudadBACKUP FF
-
 
 			-- BORRO LA TABLA CIUDADBAKUP
 			drop table [LOS_DATEROS].ciudadBACKUP   
 
-
+------------------------------------------CUERPO DE EMPRESA---------------------------------------------------
 			
-------------------------------------------cuerpo de empresa---------------------------------------
-
-						INSERT  INTO [LOS_DATEROS].empresa SELECT *
-							from (
-									select EMPRESA_RAZON_SOCIAL from gd_esquema.Maestra
-									GROUP BY EMPRESA_RAZON_SOCIAL
-									order by EMPRESA_RAZON_SOCIAL
-									offset 0 rows
-							) ff
+			INSERT  INTO [LOS_DATEROS].empresa SELECT *
+				from (
+						select EMPRESA_RAZON_SOCIAL from gd_esquema.Maestra
+						GROUP BY EMPRESA_RAZON_SOCIAL
+						order by EMPRESA_RAZON_SOCIAL
+						offset 0 rows
+				) ff
 
 						--select * from empresa
-------------   eMPRESA_RAZON_SOCIAL NO ES NULO
+						--  eMPRESA_RAZON_SOCIAL NO ES NULO
 
 
+			if exists (select name from sysindexes   where name = 'ix_empresa')   drop index ix_empresa ON [LOS_DATEROS].empresa
+			CREATE INDEX ix_empresa ON [LOS_DATEROS].empresa (	EMPRESA_RAZON_SOCIAL)
 
-		if exists (select name from sysindexes   where name = 'ix_empresa')   drop index ix_empresa ON [LOS_DATEROS].empresa
-		CREATE INDEX ix_empresa ON [LOS_DATEROS].empresa (	EMPRESA_RAZON_SOCIAL)
+--------------------------------------------CUERPO DE AVION-------------------------------------------------
+		
+			SELECT * INTO [LOS_DATEROS].avionBACKUP
+				from (
+					  select  AVION_MODELO, AVION_IDENTIFICADOR from gd_esquema.Maestra 
+					  group by AVION_MODELO, AVION_IDENTIFICADOR  
+					 --- order by AVION_MODELO
+					 ) f
 
-
------------------------------------------------------CUERPO DE AVION------------------------------------------
-		SELECT * INTO [LOS_DATEROS].avionBACKUP
-			from (
-				  select  AVION_MODELO, AVION_IDENTIFICADOR from gd_esquema.Maestra 
-				  group by AVION_MODELO, AVION_IDENTIFICADOR  
-				 --- order by AVION_MODELO
-				 ) f
-
-		--  RELLENO LA TABLA a VACIA DE LOS DATOS QUE ALMACENE EN LA TABLA CIUDADBAKUP
-		insert into [LOS_DATEROS].avion  select AVION_MODELO, AVION_IDENTIFICADOR 
-		from 
-				(  select top 50 * from [LOS_DATEROS].avionBACKUP order by AVION_MODELO  --- borrar el top
-		 ) f
+			--  RELLENO LA TABLA a VACIA DE LOS DATOS QUE ALMACENE EN LA TABLA CIUDADBAKUP
+			insert into [LOS_DATEROS].avion  select AVION_MODELO, AVION_IDENTIFICADOR 
+			from 
+					(  select top 50 * from [LOS_DATEROS].avionBACKUP order by AVION_MODELO  --- borrar el top
+			 ) f
 	
-		drop table [LOS_DATEROS].avionBACKUP
-		-- BORRAMOS LA TABLA TEMPORAL	 
+			drop table [LOS_DATEROS].avionBACKUP
+			-- BORRAMOS LA TABLA TEMPORAL	 
 
+-------------------------------------------CUERPO DE RUTA AEREA----------------------------------------------
 
+			 insert into [LOS_DATEROS].ruta_aerea( RUTA_AEREA_CODIGO, idorig , iddest )  values( 1,1,1)  
+			--		INICIALIZO LOS ID DE CADA TABLA POR ESO 1 CON TODOS 1
+			 --		 LA IDEA ES QUE CADA ID INICIAL DE CADA TABLA SEA UNO, ESTO ES PORQUE NUESTRA ESTRATEGIA ADMITE NULOS, NO ASI SUS ID, PERO ESTOS TIENEN
+			 ---  QUE EXISTIR Y SIMPLEMENTE LES ASIGNAMOS 1 POR COMODIDAD Y SIMPLICIDAD
 
+			insert into [LOS_DATEROS].ruta_aerea select  *
+			from (
+			SELECT DISTINCT RUTA_AEREA_CODIGO 
+				,(  select id_ciudad from [LOS_DATEROS].ciudad s where s.nombre=RUTA_AEREA_CIU_ORIG ) as 'RUTA_AEREA_CODIGO1'
+				,(  select id_ciudad from [LOS_DATEROS].ciudad s where s.nombre=RUTA_AEREA_CIU_DEST ) as 'RUTA_AEREA_CIU_DEST1'
+			 FROM gd_esquema.Maestra
+			 WHERE PASAJE_CODIGO IS NOT NULL
+			 ORDER BY RUTA_AEREA_CODIGO
+			 OFFSET 0 ROWS  -- ESTE ES PARA QUE ME AGREGUE  LOS DATOS ORDENADOS
+			  ) ff
 
---------------------------------------------------CUERPO DE RUTA AEREA-----------------------------------------------------------------------
+		  ----  LA ESTRATEGIA SEGUIDA ES LA SIGUIENTE: EXTRAIGO DE LA TABLA MAESTRA LA RUTA AEREA Y DE CADA CIUDAD ORIGEN Y DESTINO , CONVIERTO
+		  --LA CIUDAD ORIGEN EN UN ID DE ESA CIUDAD DE LA TABLA CREADA ciudad, Y TAMBIEN CON LA CIUDAD DESTINO EN UN ID DE ESA CIUDAD DESTINO 
+		  --EN LA TABLA ciudad
 
-		 insert into [LOS_DATEROS].ruta_aerea( RUTA_AEREA_CODIGO, idorig , iddest )  values( 1,1,1)  
-		--		INICIALIZO LOS ID DE CADA TABLA POR ESO 1 CON TODOS 1
-		 --		 LA IDEA ES QUE CADA ID INICIAL DE CADA TABLA SEA UNO, ESTO ES PORQUE NUESTRA ESTRATEGIA ADMITE NULOS, NO ASI SUS ID, PERO ESTOS TIENEN
-		 ---  QUE EXISTIR Y SIMPLEMENTE LES ASIGNAMOS 1 POR COMODIDAD Y SIMPLICIDAD
-
-
-
-		insert into [LOS_DATEROS].ruta_aerea select  *
-		from (
-		SELECT DISTINCT RUTA_AEREA_CODIGO 
-			,(  select id_ciudad from [LOS_DATEROS].ciudad s where s.nombre=RUTA_AEREA_CIU_ORIG ) as 'RUTA_AEREA_CODIGO1'
-			,(  select id_ciudad from [LOS_DATEROS].ciudad s where s.nombre=RUTA_AEREA_CIU_DEST ) as 'RUTA_AEREA_CIU_DEST1'
-		 FROM gd_esquema.Maestra
-		 WHERE PASAJE_CODIGO IS NOT NULL
-		 ORDER BY RUTA_AEREA_CODIGO
-		 OFFSET 0 ROWS  -- ESTE ES PARA QUE ME AGREGUE  LOS DATOS ORDENADOS
-		  ) ff
-
-
-	  ----  LA ESTRATEGIA SEGUIDA ES LA SIGUIENTE: EXTRAIGO DE LA TABLA MAESTRA LA RUTA AEREA Y DE CADA CIUDAD ORIGEN Y DESTINO , CONVIERTO
-	  --LA CIUDAD ORIGEN EN UN ID DE ESA CIUDAD DE LA TABLA CREADA ciudad, Y TAMBIEN CON LA CIUDAD DESTINO EN UN ID DE ESA CIUDAD DESTINO 
-	  --EN LA TABLA ciudad
-
-
------------------------------------------------------CUERPO DE VUELO---------------------------------------------------------------
+-------------------------------------------------CUERPO DE VUELO-----------------------------------------------
+	
 		SELECT * INTO [LOS_DATEROS].vueloBACKUP
 			from (
 		--insert into vuelo(VUELO_CODIGO, VUELO_FECHA_LLEGADA, VUELO_FECHA_SALUDA)
@@ -579,279 +534,279 @@ go
 		if exists (select name from sysindexes   where name = 'ix_vuelo')   drop index ix_vuelo ON [LOS_DATEROS].vuelo	
 		CREATE INDEX ix_vuelo	ON [LOS_DATEROS].vuelo (	VUELO_CODIGO)
 	--	select * from vuelo
----------------------------------------------------------------------------------------------
------------------------------------------------CUERPO TIPO DE BUTACA---------------------------------------------------------------------------------
-							insert into [LOS_DATEROS].tipo_butacas select  *
-									from (
-							 select distinct BUTACA_TIPO
-							  from gd_esquema.Maestra 
-							  order by   BUTACA_TIPO
-							  OFFSET 0 ROWS  -- ESTE ES PARA QUE ME AGREGUE  LOS DATOS ORDENADOS
-							 ) ff
 
+-----------------------------------------------CUERPO TIPO DE BUTACA------------------------------------------
+			
+				insert into [LOS_DATEROS].tipo_butacas select  *
+						from (
+					select distinct BUTACA_TIPO
+					from gd_esquema.Maestra 
+					order by   BUTACA_TIPO
+					OFFSET 0 ROWS  -- ESTE ES PARA QUE ME AGREGUE  LOS DATOS ORDENADOS
+				) ff
+		--	select * from butacas
 		
-					--	select * from butacas
-		
------------------------------	CUERPO DE --PASAJES-------------------------------------------------------
-
+-----------------------------------------------CUERPO DE PASAJES----------------------------------------------
+			
+			insert into [LOS_DATEROS].pasajes select * 
+					from (
+						select PASAJE_CODIGO, PASAJE_PRECIO, PASAJE_COSTO,
  
-					 insert into [LOS_DATEROS].pasajes select * 
-						 from (
-							 select PASAJE_CODIGO, PASAJE_PRECIO, PASAJE_COSTO,
+						( select top 1 id_vuelo from [LOS_DATEROS].vuelo v where v.VUELO_CODIGO=m.VUELO_CODIGO )  as id_vuelo
  
-							  ( select top 1 id_vuelo from [LOS_DATEROS].vuelo v where v.VUELO_CODIGO=m.VUELO_CODIGO )  as id_vuelo
+						from gd_esquema.Maestra m
  
-							 from gd_esquema.Maestra m
- 
-							 group by PASAJE_CODIGO, PASAJE_PRECIO, PASAJE_COSTO, VUELO_CODIGO
+						group by PASAJE_CODIGO, PASAJE_PRECIO, PASAJE_COSTO, VUELO_CODIGO
 
-							 order  by PASAJE_CODIGO
-							 OFFSET 0 ROWS  -- ESTE ES PARA QUE ME AGREGUE  LOS DATOS ORDENADOS
-						) ff
+						order  by PASAJE_CODIGO
+						OFFSET 0 ROWS  -- ESTE ES PARA QUE ME AGREGUE  LOS DATOS ORDENADOS
+				) ff
 
-					
+--------------------------------------------------CUERPO DE BUTACAS-------------------------------------------
+				
+			SELECT * INTO [LOS_DATEROS].butacasBACKUP
+					from (
 
------------------------------------------------------CUERPO DE BUTACAS--------------------------------------------------------------------
-
-							SELECT * INTO [LOS_DATEROS].butacasBACKUP
-								from (
-
-								select BUTACA_NUMERO , BUTACA_TIPO, PASAJE_CODIGO , AVION_IDENTIFICADOR,AVION_MODELO from gd_esquema.Maestra  where BUTACA_NUMERO IS NOT NULL
+					select BUTACA_NUMERO , BUTACA_TIPO, PASAJE_CODIGO , AVION_IDENTIFICADOR,AVION_MODELO from gd_esquema.Maestra  where BUTACA_NUMERO IS NOT NULL
 	
-								group by BUTACA_NUMERO , BUTACA_TIPO, PASAJE_CODIGO,  AVION_IDENTIFICADOR,AVION_MODELO   order by abs(PASAJE_CODIGO)
-								  OFFSET 0 ROWS 
-								) vv
+					group by BUTACA_NUMERO , BUTACA_TIPO, PASAJE_CODIGO,  AVION_IDENTIFICADOR,AVION_MODELO   order by abs(PASAJE_CODIGO)
+						OFFSET 0 ROWS 
+			) vv
 
-								insert into [LOS_DATEROS].butacas( ID_BUTACA_TIPO, BUTACA_NUMERO, id_pasaje, id_avion) values(null, null,1,1)
+			insert into [LOS_DATEROS].butacas( ID_BUTACA_TIPO, BUTACA_NUMERO, id_pasaje, id_avion) values(null, null,1,1)
 
-									insert into [LOS_DATEROS].butacas select * 
-										from (
-											select	 ( select bb.id_tipo_butaca from [LOS_DATEROS].tipo_butacas bb where b.BUTACA_TIPO=bb.BUTACA_TIPO )  as iditipobutaca,
-											b.BUTACA_NUMERO,
-											( select p.id_pasaje from [LOS_DATEROS].pasajes p where p.PASAJE_CODIGO=b.PASAJE_CODIGO ) as idpasaje,
-											( select a.id_avion from [LOS_DATEROS].avion a where b.AVION_IDENTIFICADOR=a.AVION_IDENTIFICADOR and a.AVION_MODELO=b.AVION_MODELO ) AS ffe  
-											  from [LOS_DATEROS].butacasBACKUP b  order by abs(PASAJE_CODIGO)
-											  OFFSET 0 ROWS
-										) ff	  
+			insert into [LOS_DATEROS].butacas select * 
+				from (
+					select	 ( select bb.id_tipo_butaca from [LOS_DATEROS].tipo_butacas bb where b.BUTACA_TIPO=bb.BUTACA_TIPO )  as iditipobutaca,
+					b.BUTACA_NUMERO,
+					( select p.id_pasaje from [LOS_DATEROS].pasajes p where p.PASAJE_CODIGO=b.PASAJE_CODIGO ) as idpasaje,
+					( select a.id_avion from [LOS_DATEROS].avion a where b.AVION_IDENTIFICADOR=a.AVION_IDENTIFICADOR and a.AVION_MODELO=b.AVION_MODELO ) AS ffe  
+						from [LOS_DATEROS].butacasBACKUP b  order by abs(PASAJE_CODIGO)
+						OFFSET 0 ROWS
+				) ff	  
 
 
-									drop table [LOS_DATEROS].butacasBACKUP
-									-- BORRO butacasBACKUP PORQUE ES TEMPORAL
+			drop table [LOS_DATEROS].butacasBACKUP
+			-- BORRO butacasBACKUP PORQUE ES TEMPORAL
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 					 if exists (select name from sysindexes   where name = 'ix_butacas')   drop index ix_butacas ON [LOS_DATEROS].butacas	
 							CREATE INDEX  ix_butacas ON [LOS_DATEROS].butacas	 ( ID_BUTACA_TIPO, BUTACA_NUMERO)
 
---------------------------------------------------CUERPO DE SUCURSAL------------------------------------------------------
-							insert into [LOS_DATEROS].sucursal select *
-								from ( 
-									select SUCURSAL_DIR, SUCURSAL_MAIL, SUCURSAL_TELEFONO from gd_esquema.Maestra
-									group by SUCURSAL_DIR, SUCURSAL_MAIL, SUCURSAL_TELEFONO
-									order by  SUCURSAL_MAIL
-									OFFSET 0 ROWS
-									) ff
+--------------------------------------------------CUERPO DE SUCURSAL---------------------------------------------
+			
+			insert into [LOS_DATEROS].sucursal select *
+				from ( 
+					select SUCURSAL_DIR, SUCURSAL_MAIL, SUCURSAL_TELEFONO from gd_esquema.Maestra
+					group by SUCURSAL_DIR, SUCURSAL_MAIL, SUCURSAL_TELEFONO
+					order by  SUCURSAL_MAIL
+					OFFSET 0 ROWS
+			) ff
 
+----------------------------------------------CUERPO DE TIPO HABITACION-------------------------------------------
 
+			insert INTO [LOS_DATEROS].tipo_habitacion select *
+				from (
+					SELECT TIPO_HABITACION_DESC, TIPO_HABITACION_CODIGO FROM gd_esquema.Maestra
+					GROUP BY  TIPO_HABITACION_DESC, TIPO_HABITACION_CODIGO
+						ORDER BY TIPO_HABITACION_CODIGO
+					OFFSET 0 ROWS
+			) ff
 
-----------------------------------------------CUERPO DE TIPO HABITACION--------------------------------------------------------------------------
+--------------------------------------------------CUERPO DE HOTEL-------------------------------------------------
 
-							insert INTO [LOS_DATEROS].tipo_habitacion select *
-								 from (
-										SELECT TIPO_HABITACION_DESC, TIPO_HABITACION_CODIGO FROM gd_esquema.Maestra
-										GROUP BY  TIPO_HABITACION_DESC, TIPO_HABITACION_CODIGO
-										 ORDER BY TIPO_HABITACION_CODIGO
-										OFFSET 0 ROWS
-								 ) ff
+			insert INTO [LOS_DATEROS].hotel select *
+				from (
+					select HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS from gd_esquema.Maestra
+					group by HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS 
+					order by HOTEL_CANTIDAD_ESTRELLAS
+					OFFSET 0 ROWS
+			) ff
 
+------------------------------------------------CUERPO HABITACION--------------------------------------------------
 
--------------------------------------------CUERPO DE HOTEL--------------------------------------------------------------------
-
-						insert INTO [LOS_DATEROS].hotel select *
-						from (
-								select HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS from gd_esquema.Maestra
-								group by HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS 
-								order by HOTEL_CANTIDAD_ESTRELLAS
-								OFFSET 0 ROWS
-							) ff
-
-
------------------------------------------CUERPO HABITACION--------------------------------------------------------------------------------------
-
-						SELECT * INTO [LOS_DATEROS].habitacionBACKUP
-						from (
-							select  HABITACION_NUMERO, HABITACION_PISO, HABITACION_FRENTE, HABITACION_PRECIO, HABITACION_COSTO ,HOTEL_NRO_CALLE, TIPO_HABITACION_CODIGO
-							 from gd_esquema.Maestra 
-								where HABITACION_NUMERO IS NOT NULL
-							 GROUP BY  HABITACION_NUMERO, HABITACION_PISO, HABITACION_FRENTE, HABITACION_PRECIO, HABITACION_COSTO ,HOTEL_NRO_CALLE, TIPO_HABITACION_CODIGO
-						) ff
+			SELECT * INTO [LOS_DATEROS].habitacionBACKUP
+				from (
+					select  HABITACION_NUMERO, HABITACION_PISO, HABITACION_FRENTE, HABITACION_PRECIO, HABITACION_COSTO ,HOTEL_NRO_CALLE, TIPO_HABITACION_CODIGO
+						from gd_esquema.Maestra 
+						where HABITACION_NUMERO IS NOT NULL
+						GROUP BY  HABITACION_NUMERO, HABITACION_PISO, HABITACION_FRENTE, HABITACION_PRECIO, HABITACION_COSTO ,HOTEL_NRO_CALLE, TIPO_HABITACION_CODIGO
+			) ff
 
 
 		
-						insert into [LOS_DATEROS].habitacion( HABITACION_NUMERO, HABITACION_PISO, HABITACION_FRENTE, HABITACION_PRECIO, HABITACION_COSTO, id_hotel,id_tipo_habitacion) values(null,null,null,null, null,1,1)
+			insert into [LOS_DATEROS].habitacion( HABITACION_NUMERO, HABITACION_PISO, HABITACION_FRENTE, HABITACION_PRECIO, HABITACION_COSTO, id_hotel,id_tipo_habitacion) values(null,null,null,null, null,1,1)
 		
-						insert INTO [LOS_DATEROS].habitacion select *
-							 from (
-											select HABITACION_NUMERO, HABITACION_PISO, HABITACION_FRENTE, HABITACION_PRECIO, HABITACION_COSTO, 
-											( select h1.ID_HOTEL from [LOS_DATEROS].hotel h1 where h1.HOTEL_NRO_CALLE=hh.HOTEL_NRO_CALLE )  as id_hotel,
-											(select t.ID_TIPO_HABITACION from [LOS_DATEROS].tipo_habitacion t where hh.TIPO_HABITACION_CODIGO=t.TIPO_HABITACION_CODIGO  ) as id_habitacion
-							from [LOS_DATEROS].habitacionBACKUP hh 
-								--select * from habitacion
+			insert INTO [LOS_DATEROS].habitacion select *
+					from (
+								select HABITACION_NUMERO, HABITACION_PISO, HABITACION_FRENTE, HABITACION_PRECIO, HABITACION_COSTO, 
+								( select h1.ID_HOTEL from [LOS_DATEROS].hotel h1 where h1.HOTEL_NRO_CALLE=hh.HOTEL_NRO_CALLE )  as id_hotel,
+								(select t.ID_TIPO_HABITACION from [LOS_DATEROS].tipo_habitacion t where hh.TIPO_HABITACION_CODIGO=t.TIPO_HABITACION_CODIGO  ) as id_habitacion
+								from [LOS_DATEROS].habitacionBACKUP hh 
+					--select * from habitacion
 				
-							) tt
+				) tt
 
+			drop table [LOS_DATEROS].habitacionBACKUP    --	drop table habitacion
 
+-----------------------------------------------CUERPO DE ESTADIA------------------------------------------------------
 
-
-						drop table [LOS_DATEROS].habitacionBACKUP    --	drop table habitacion
-
-
-
----------------------------------------------CUERPO DE---ESTADIA------------------------------------------------------------------------------------
-
-		
-
-
-					SELECT * INTO [LOS_DATEROS].estadiaBACKUP
-						from (
-						select ESTADIA_CODIGO, ESTADIA_FECHA_INI, ESTADIA_CANTIDAD_NOCHES, EMPRESA_RAZON_SOCIAL, HABITACION_NUMERO,HABITACION_PISO ,HABITACION_FRENTE,   HOTEL_NRO_CALLE , TIPO_HABITACION_CODIGO
-						 from gd_esquema.Maestra
-						  group by ESTADIA_CODIGO, ESTADIA_FECHA_INI, ESTADIA_CANTIDAD_NOCHES, EMPRESA_RAZON_SOCIAL, HABITACION_NUMERO,HABITACION_PISO ,HABITACION_FRENTE,   HOTEL_NRO_CALLE , TIPO_HABITACION_CODIGO
+			SELECT * INTO [LOS_DATEROS].estadiaBACKUP
+				from (
+				select ESTADIA_CODIGO, ESTADIA_FECHA_INI, ESTADIA_CANTIDAD_NOCHES, EMPRESA_RAZON_SOCIAL, HABITACION_NUMERO,HABITACION_PISO ,HABITACION_FRENTE,   HOTEL_NRO_CALLE , TIPO_HABITACION_CODIGO
+					from gd_esquema.Maestra
+					group by ESTADIA_CODIGO, ESTADIA_FECHA_INI, ESTADIA_CANTIDAD_NOCHES, EMPRESA_RAZON_SOCIAL, HABITACION_NUMERO,HABITACION_PISO ,HABITACION_FRENTE,   HOTEL_NRO_CALLE , TIPO_HABITACION_CODIGO
 	
-					) ff
-
+			) ff
 	
-						SELECT * INTO [LOS_DATEROS].estadiaBACKUP2
-							from (
-									select e.ESTADIA_CODIGO , e.ESTADIA_FECHA_INI , e.ESTADIA_CANTIDAD_NOCHES, 
-									( select  em.ID_EMPRESA from [LOS_DATEROS].empresa em where em.EMPRESA_RAZON_SOCIAL=e.EMPRESA_RAZON_SOCIAL) as id_empresa,
+			SELECT * INTO [LOS_DATEROS].estadiaBACKUP2
+				from (
+						select e.ESTADIA_CODIGO , e.ESTADIA_FECHA_INI , e.ESTADIA_CANTIDAD_NOCHES, 
+						( select  em.ID_EMPRESA from [LOS_DATEROS].empresa em where em.EMPRESA_RAZON_SOCIAL=e.EMPRESA_RAZON_SOCIAL) as id_empresa,
 	
-									e.HABITACION_NUMERO,e.HABITACION_PISO, e.HABITACION_FRENTE,  
+						e.HABITACION_NUMERO,e.HABITACION_PISO, e.HABITACION_FRENTE,  
 			
   
-									( select  htl.ID_HOTEL from [LOS_DATEROS].hotel htl where e.HOTEL_NRO_CALLE=htl.HOTEL_NRO_CALLE  ) as id_hotel ,
-									( select th.ID_TIPO_HABITACION from [LOS_DATEROS].tipo_habitacion th where th.TIPO_HABITACION_CODIGO=e.TIPO_HABITACION_CODIGO ) as id_tipo_habitacion
-			 						from [LOS_DATEROS].estadiaBACKUP e
-							) fff
-						 	
-	
-	
-							insert into [LOS_DATEROS].estadia(id_empresa ,id_habitacion) values(1,1)
-		
+						( select  htl.ID_HOTEL from [LOS_DATEROS].hotel htl where e.HOTEL_NRO_CALLE=htl.HOTEL_NRO_CALLE  ) as id_hotel ,
+						( select th.ID_TIPO_HABITACION from [LOS_DATEROS].tipo_habitacion th where th.TIPO_HABITACION_CODIGO=e.TIPO_HABITACION_CODIGO ) as id_tipo_habitacion
+			 			from [LOS_DATEROS].estadiaBACKUP e
+				) fff
+						 		
+			insert into [LOS_DATEROS].estadia(id_empresa ,id_habitacion) values(1,1)
 	 
-							insert INTO [LOS_DATEROS].estadia select *
-								 from (
-									 select  est2.ESTADIA_CODIGO, est2.ESTADIA_FECHA_INI, est2.ESTADIA_CANTIDAD_NOCHES, est2.id_empresa,
+			insert INTO [LOS_DATEROS].estadia select *
+					from (
+						select  est2.ESTADIA_CODIGO, est2.ESTADIA_FECHA_INI, est2.ESTADIA_CANTIDAD_NOCHES, est2.id_empresa,
 	 
-											 (  select  ht.ID_HABITACION from [LOS_DATEROS].habitacion ht where  est2.HABITACION_NUMERO=ht.HABITACION_NUMERO and 
+								(  select  ht.ID_HABITACION from [LOS_DATEROS].habitacion ht where  est2.HABITACION_NUMERO=ht.HABITACION_NUMERO and 
 
-												est2.HABITACION_PISO=ht.HABITACION_PISO and est2.HABITACION_FRENTE=ht.HABITACION_FRENTE and est2.id_hotel=ht.id_hotel
+								est2.HABITACION_PISO=ht.HABITACION_PISO and est2.HABITACION_FRENTE=ht.HABITACION_FRENTE and est2.id_hotel=ht.id_hotel
 		
-												  and	  est2.id_tipo_habitacion=ht.id_tipo_habitacion  
+									and	  est2.id_tipo_habitacion=ht.id_tipo_habitacion  
 	  
-											  ) as id_habitacion
+								) as id_habitacion
 	 
-									from [LOS_DATEROS].estadiaBACKUP2 est2
-									order by ESTADIA_CODIGO
-									offset 0 ROWS
-								) fff
+					from [LOS_DATEROS].estadiaBACKUP2 est2
+					order by ESTADIA_CODIGO
+					offset 0 ROWS
+				) fff
 
+				UPDATE [LOS_DATEROS].estadia set id_habitacion=1 where id_habitacion is null
 
-								UPDATE [LOS_DATEROS].estadia set id_habitacion=1 where id_habitacion is null
-
-
-								drop table [LOS_DATEROS].estadiaBACKUP
+				drop table [LOS_DATEROS].estadiaBACKUP
 				
-								drop table [LOS_DATEROS].estadiaBACKUP2
-
-
+				drop table [LOS_DATEROS].estadiaBACKUP2
 		
-
----------------------------------------------------CUERPO DE CLIENTE-------------------------------------------------------------------------------------
-							SELECT * INTO [LOS_DATEROS].clienteBACKUP
-								from (
-									SELECT CLIENTE_DNI,CLIENTE_NOMBRE, CLIENTE_APELLIDO, CLIENTE_FECHA_NAC,CLIENTE_TELEFONO,CLIENTE_MAIL FROM gd_esquema.Maestra
-									GROUP BY   CLIENTE_DNI,CLIENTE_NOMBRE, CLIENTE_APELLIDO, CLIENTE_FECHA_NAC,CLIENTE_TELEFONO,CLIENTE_MAIL
-									ORDER BY CLIENTE_DNI
-									OFFSET 0 ROWS
-								) FF
+----------------------------------------------CUERPO DE CLIENTE-----------------------------------------------
+							
+			SELECT * INTO [LOS_DATEROS].clienteBACKUP
+				from (
+					SELECT CLIENTE_DNI,CLIENTE_NOMBRE, CLIENTE_APELLIDO, CLIENTE_FECHA_NAC,CLIENTE_TELEFONO,CLIENTE_MAIL FROM gd_esquema.Maestra
+					GROUP BY   CLIENTE_DNI,CLIENTE_NOMBRE, CLIENTE_APELLIDO, CLIENTE_FECHA_NAC,CLIENTE_TELEFONO,CLIENTE_MAIL
+					ORDER BY CLIENTE_DNI
+					OFFSET 0 ROWS
+			) FF
 			
-					
-	 
-						insert INTO [LOS_DATEROS].cliente select *
-							 from (
-							select * from [LOS_DATEROS].clienteBACKUP
-							) ff
+
+			insert INTO [LOS_DATEROS].cliente select *
+				from (
+					select * from [LOS_DATEROS].clienteBACKUP
+			) ff
 			
-							drop  table [LOS_DATEROS].clienteBACKUP
-
-
+			drop  table [LOS_DATEROS].clienteBACKUP
 							
 			-- HAY DNI DUPLICADOS ENTONCES ASUMO QUE EL DNI NO ASIRVE SOLAMENTE PARA AGRUPAR
-
 			
--------------------------------------------------------INDICES--DE CLIENTEr------------------------------------------------------------			
-				if exists (select name from sysindexes   where name = 'ix_cliente')   drop index ix_cliente ON [LOS_DATEROS].cliente	
-				CREATE INDEX ix_cliente	ON [LOS_DATEROS].cliente (CLIENTE_DNI	, CLIENTE_APELLIDO)
-------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------INDICES DE CLIENTE--------------------------------------------------		
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------CUERPO DE FACTURA----------------------------------------------------------------------------------			
-				
-				
-				
-				SELECT * INTO [LOS_DATEROS].facturaBACKUP
-						from (
-								SELECT FACTURA_NRO, FACTURA_FECHA, CLIENTE_DNI, CLIENTE_APELLIDO , CLIENTE_NOMBRE, SUCURSAL_DIR FROM gd_esquema.Maestra
-							group by  FACTURA_NRO, FACTURA_FECHA, CLIENTE_DNI, CLIENTE_APELLIDO , CLIENTE_NOMBRE, SUCURSAL_DIR
-							ORDER BY FACTURA_NRO
-							OFFSET 0 ROWS
-						) vv
-				--CONSULTA RAPIDA
+			if exists (select name from sysindexes   where name = 'ix_cliente')   drop index ix_cliente ON [LOS_DATEROS].cliente	
+			CREATE INDEX ix_cliente	ON [LOS_DATEROS].cliente (CLIENTE_DNI	, CLIENTE_APELLIDO)
+
+----------------------------------------------CUERPO DE FACTURA---------------------------------------------------				
+			
+			SELECT * INTO [LOS_DATEROS].facturaBACKUP
+					from (
+							SELECT FACTURA_NRO, FACTURA_FECHA, CLIENTE_DNI, CLIENTE_APELLIDO , CLIENTE_NOMBRE, SUCURSAL_DIR FROM gd_esquema.Maestra
+						group by  FACTURA_NRO, FACTURA_FECHA, CLIENTE_DNI, CLIENTE_APELLIDO , CLIENTE_NOMBRE, SUCURSAL_DIR
+						ORDER BY FACTURA_NRO
+						OFFSET 0 ROWS
+			) vv
+			--CONSULTA RAPIDA
 
 		
 ------------------------------------------------------------------------------------------------------------------------------------
 
-				if exists (select name from sysindexes   where name = 'ix_facturaBACKUP')   drop index ix_facturaBACKUP ON [LOS_DATEROS].facturaBACKUP	
-				CREATE INDEX ix_facturaBACKUP	ON [LOS_DATEROS].facturaBACKUP (FACTURA_NRO	,CLIENTE_DNI )
+			if exists (select name from sysindexes   where name = 'ix_facturaBACKUP')   drop index ix_facturaBACKUP ON [LOS_DATEROS].facturaBACKUP	
+			CREATE INDEX ix_facturaBACKUP	ON [LOS_DATEROS].facturaBACKUP (FACTURA_NRO	,CLIENTE_DNI )
 			
-				if exists (select name from sysindexes   where name = 'ix_sucursal')   drop index ix_sucursal ON [LOS_DATEROS].sucursal	
-				CREATE INDEX ix_sucursal ON [LOS_DATEROS].sucursal (id_sucursal,SUCURSAL_DIR )   
+			if exists (select name from sysindexes   where name = 'ix_sucursal')   drop index ix_sucursal ON [LOS_DATEROS].sucursal	
+			CREATE INDEX ix_sucursal ON [LOS_DATEROS].sucursal (id_sucursal,SUCURSAL_DIR )   
+
 ------------------------------------------------------------------------------------------------------------------------------------------				
 
-			--	insert into factura(id_cliente, idsucursal) values(1 ,1)
-
-				insert INTO [LOS_DATEROS].factura select *
-					 from (
-						select fa.FACTURA_NRO, fa.FACTURA_FECHA , 
-								( select  c.ID_CLIENTE  from [LOS_DATEROS].cliente c where c.CLIENTE_DNI=fa.CLIENTE_DNI and c.CLIENTE_APELLIDO=fa.CLIENTE_APELLIDO  and fa.CLIENTE_NOMBRE=c.CLIENTE_NOMBRE )
-								as id_cliente,
-								( select s.id_sucursal  from [LOS_DATEROS].sucursal s where s.SUCURSAL_DIR=fa.SUCURSAL_DIR  ) as idsucursal,
-					 null  as ID_COMPRA
-						 from [LOS_DATEROS].facturaBACKUP fa
-						 order by abs(fa.FACTURA_NRO)
-						 offset 0 rows
-						) DD
-						--CONSULTA MUY LENTA
+			insert INTO [LOS_DATEROS].factura select *
+					from (
+					select fa.FACTURA_NRO, fa.FACTURA_FECHA , 
+							( select  c.ID_CLIENTE  from [LOS_DATEROS].cliente c where c.CLIENTE_DNI=fa.CLIENTE_DNI and c.CLIENTE_APELLIDO=fa.CLIENTE_APELLIDO  and fa.CLIENTE_NOMBRE=c.CLIENTE_NOMBRE )
+							as id_cliente,
+							( select s.id_sucursal  from [LOS_DATEROS].sucursal s where s.SUCURSAL_DIR=fa.SUCURSAL_DIR  ) as idsucursal,
+					null  as ID_COMPRA
+						from [LOS_DATEROS].facturaBACKUP fa
+						order by abs(fa.FACTURA_NRO)
+						offset 0 rows
+					) DD
+					--CONSULTA MUY LENTA
 			
-					drop index ix_cliente  ON [LOS_DATEROS].cliente    --BORRO EL INDICE PARA MANTENER LIMPIA LA BASE DE DATOS, PERO LA RALENTIZA
-					drop table [LOS_DATEROS].facturaBACKUP				-- BORRO LA TABLA AUXILIAR FACTURABACKUP
-				 
-				
-				 ALTER TABLE [LOS_DATEROS].compra  drop column NRO_FACTURA 
+			drop index ix_cliente  ON [LOS_DATEROS].cliente    --BORRO EL INDICE PARA MANTENER LIMPIA LA BASE DE DATOS, PERO LA RALENTIZA
+			drop table [LOS_DATEROS].facturaBACKUP				-- BORRO LA TABLA AUXILIAR FACTURABACKUP
+				 		
+			ALTER TABLE [LOS_DATEROS].compra  drop column NRO_FACTURA 
 				 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 				 ---		  create  cliente     factura    ingresar suscursal   pasaje  hotel   butaca 
 				-- create function LOS_DATEROS.hotelTieneReserva
 				-- comprobar estadia   comprobar butaca      comprobar vuelo 
-				--  buscar cliente     buscar hotel     buscar  
+						--  buscar cliente     buscar hotel     buscar  
 
+-----------------------------------------------------------------------------------------
+----------------------------------Procedures---------------------------------------------
+-----------------------------------------------------------------------------------------
 
+use GD1C2020
+	go
+		create procedure crearCliente @dni decimal(18,0), @nombre nvarchar(255), @apellido nvarchar(255), @fechaNac datetime2(3), @telefono int, @mail nvarchar(255)
+			as
+			begin
+					if((Select COUNT(1) from Los_dateros.cliente c where (c.CLIENTE_DNI = @dni and c.CLIENTE_APELLIDO =@apellido and c.CLIENTE_NOMBRE=@nombre )) = 0) begin
+						INSERT INTO LOS_DATEROS.cliente(CLIENTE_DNI,CLIENTE_NOMBRE,CLIENTE_APELLIDO,CLIENTE_FECHA_NAC,CLIENTE_TELEFONO,CLIENTE_MAIL) --Insercion de item
+						values(@dni,@nombre,@apellido,@fechaNac,@telefono,@mail)
+					end
+			end		
+	go
 
+	go
+		create procedure ingresarSucursal @dir nvarchar(255), @mail nvarchar(255), @tel decimal(18,0)
+			as
+			begin
+					if((Select COUNT(1) from LOS_DATEROS.sucursal s where (s.SUCURSAL_DIR = @dir)) = 0) begin
+						INSERT INTO LOS_DATEROS.sucursal(SUCURSAL_DIR,SUCURSAL_MAIL,SUCURSAL_TELEFONO) --Insercion de item
+						values(@dir,@mail,@tel)
+					end
+			end
+	go
 
-
-
-
-
+	go
+		create procedure crearFactura @clienteDni decimal(18,0), @clienteApellido nvarchar(255),@sucursalDir nvarchar(255), @compraNumero decimal(18,0) -- No se bien como hacer lo de las compras 
+			as
+			begin
+					declare @sucursal as bigint = (Select id_sucursal from LOS_DATEROS.sucursal suc where suc.SUCURSAL_DIR=@sucursalDir)            
+					declare @facturaNumero as decimal(18,0) =(SELECT TOP 1 FACTURA_NRO from LOS_DATEROS.factura WHERE (idsucursal = @sucursal))+1    -- Busco la ultima factura de la sucursal y le sumo 1
+					declare @idcliente as bigint = (SELECT TOP 1 ID_CLIENTE from LOS_DATEROS.cliente c where (c.CLIENTE_DNI = @clienteDni and c.CLIENTE_APELLIDO=@clienteApellido))
+	
+							INSERT INTO LOS_DATEROS.factura(FACTURA_NRO,FACTURA_FECHA) --No sabía si tenía que poner la fecha de hoy o alguna otra
+							values(@facturaNumero,SYSDATETIME(),@idcliente,@sucursal,@compraNumero)
+			end
+	go
 
 
 
