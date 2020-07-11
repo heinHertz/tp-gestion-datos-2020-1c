@@ -405,7 +405,7 @@ go
 					
 				--obligaFmos al la tabla factura a actualizarse
 						
-				UPDATE [LOS_DATEROS].factura set [LOS_DATEROS].factura.id_compra = com.COMPRA_NUMERO from [LOS_DATEROS].compra com 
+				UPDATE [LOS_DATEROS].factura set [LOS_DATEROS].factura.compra_Numero = com.COMPRA_NUMERO from [LOS_DATEROS].compra com 
 				where [LOS_DATEROS].factura.FACTURA_NRO=com.NRO_FACTURA and  com.COMPRA_NUMERO  is not null
 						
 				--	ALTER TABLE compra  drop column NRO_FACTURA 
@@ -813,17 +813,19 @@ use GD1C2020
 	go
 
 	go
-		create procedure buscarCliente @dni decimal(18,0), @apellido nvarchar(255)
-			as
+		create procedure buscarCliente @apellido nvarchar(50)=null, @nro decimal(18,0)=null  --le da formato "opcional" 
+		as
+		begin
+	
+		if( @nro is null )
 			begin
-					if((Select COUNT(1) from Los_dateros.cliente c where (c.CLIENTE_DNI = @dni and c.CLIENTE_APELLIDO = @apellido)) != 0) 
-					begin
-						Select * from LOS_DATEROS.cliente c where c.CLIENTE_DNI = @dni and c.CLIENTE_APELLIDO = @apellido
-					end
-					else
-						select * from LOS_DATEROS.cliente where ID_CLIENTE = 1 -- no se que hacer si no encuentra, le mande que devuelva el feo, pero no creo que estÈ bien
-					
-			end		
+				if(ISNUMERIC(@apellido)=1)  Select * from LOS_DATEROS.cliente c where c.CLIENTE_DNI = cast(@apellido as decimal(18,0))  
+				else 
+				Select * from LOS_DATEROS.cliente c where c.CLIENTE_APELLIDO = @apellido 
+			end
+		else 
+			Select * from LOS_DATEROS.cliente c where c.CLIENTE_APELLIDO = @apellido and c.CLIENTE_DNI = @nro
+		end
 	go
 
 	go
@@ -833,7 +835,10 @@ use GD1C2020
 					if((Select COUNT(1) from LOS_DATEROS.sucursal s where (s.SUCURSAL_DIR = @dir)) = 0) begin
 						INSERT INTO LOS_DATEROS.sucursal(SUCURSAL_DIR,SUCURSAL_MAIL,SUCURSAL_TELEFONO) --Insercion de item
 						values(@dir,@mail,@tel)
-					end
+						end
+					else
+							RAISERROR (  N'Ya existe sucursal.', 10, 1)
+					--end
 			end
 	go
 
@@ -844,8 +849,9 @@ use GD1C2020
 					declare @sucursal as bigint = (Select id_sucursal from LOS_DATEROS.sucursal suc where suc.SUCURSAL_DIR=@sucursalDir)            
 					declare @facturaNumero as decimal(18,0) =(SELECT TOP 1 FACTURA_NRO from LOS_DATEROS.factura WHERE (idsucursal = @sucursal) ORDER BY FACTURA_NRO DESC)+1    -- Busco la ultima factura de la sucursal y le sumo 1
 					declare @idcliente as bigint = (SELECT TOP 1 ID_CLIENTE from LOS_DATEROS.cliente c where (c.CLIENTE_DNI = @clienteDni and c.CLIENTE_APELLIDO=@clienteApellido))
+					--declare @compraNumero as bigint = (SELECT TOP 1 ID_CLIENTE from LOS_DATEROS.cliente c where (c.CLIENTE_DNI = @clienteDni and c.CLIENTE_APELLIDO=@clienteApellido))
 	
-							INSERT INTO LOS_DATEROS.factura(FACTURA_NRO,FACTURA_FECHA) --No sabÌa si tenÌa que poner la fecha de hoy o alguna otra
+							INSERT INTO LOS_DATEROS.factura(FACTURA_NRO,FACTURA_FECHA, id_cliente, idsucursal, compra_Numero) --No sab√≠a si ten√≠a que poner la fecha de hoy o alguna otra
 							values(@facturaNumero,SYSDATETIME(),@idcliente,@sucursal,@compraNumero)
 			end
 	go
@@ -854,7 +860,7 @@ use GD1C2020
 		create procedure habitacionReservas @calle nvarchar(50), @nro decimal(18,0), @habitacion decimal(18,0)
 		as
 		begin
-			select ESTADIA_CODIGO as 'Codigo EstadÌa',ESTADIA_FECHA_INI as 'Fecha de Inicio',ESTADIA_CANTIDAD_NOCHES as 'Cantidad de Noches'	-- Por ahora puse que se muestre esto, no se si hace falta algo m·s
+			select ESTADIA_CODIGO as 'Codigo Estad√≠a',ESTADIA_FECHA_INI as 'Fecha de Inicio',ESTADIA_CANTIDAD_NOCHES as 'Cantidad de Noches'	-- Por ahora puse que se muestre esto, no se si hace falta algo m√°s
 			from LOS_DATEROS.estadia e 
 			join LOS_DATEROS.habitacion h on e.id_habitacion=h.ID_HABITACION
 			join LOS_DATEROS.hotel hot on h.id_hotel = hot.ID_HOTEL
@@ -862,14 +868,14 @@ use GD1C2020
 		end		
 	go
 
-	--Ejemplo de si habitacionReservas para alguna habitaciÛn
-	--exec habitacionReservas @calle = 'Avenida Juan AgustÌn GarcÌa', @nro = 22863, @habitacion = 38  
+	--Ejemplo de si habitacionReservas para alguna habitaci√≥n
+	--exec habitacionReservas @calle = 'Avenida Juan Agust√≠n Garc√≠a', @nro = 22863, @habitacion = 38  
 
 	go
 		create procedure hotelReservas @calle nvarchar(50), @nro decimal(18,0)
 		as
 		begin
-			select ESTADIA_CODIGO,ESTADIA_FECHA_INI,ESTADIA_CANTIDAD_NOCHES,HABITACION_NUMERO,HABITACION_PISO -- Por ahora puse que se muestre esto, no se si hace falta algo m·s
+			select ESTADIA_CODIGO,ESTADIA_FECHA_INI,ESTADIA_CANTIDAD_NOCHES,HABITACION_NUMERO,HABITACION_PISO -- Por ahora puse que se muestre esto, no se si hace falta algo m√°s
 			from LOS_DATEROS.estadia e 
 			join LOS_DATEROS.habitacion h on e.id_habitacion=h.ID_HABITACION
 			join LOS_DATEROS.hotel hot on h.id_hotel = hot.ID_HOTEL
@@ -877,12 +883,12 @@ use GD1C2020
 		end		
 	go
 
-	--Ejemplo de si hotelReservas para alguna habitaciÛn
-	--exec hotelReservas @calle = 'Avenida Juan AgustÌn GarcÌa', @nro = 22863
+	--Ejemplo de si hotelReservas para alguna habitaci√≥n
+	--exec hotelReservas @calle = 'Avenida Juan Agust√≠n Garc√≠a', @nro = 22863
 
 	go
 		create procedure crearHotel @calle nvarchar(50), @nro decimal(18,0), @estrellas decimal(18,0)	
-		as																								--No se si hace falta algo m·s xd
+		as																								--No se si hace falta algo m√°s xd
 		begin
 			INSERT INTO LOS_DATEROS.hotel(HOTEL_CALLE,HOTEL_NRO_CALLE,HOTEL_CANTIDAD_ESTRELLAS) 
 			values(@calle,@nro,@estrellas)
@@ -891,21 +897,29 @@ use GD1C2020
 
 	go
 		create procedure crearPasaje @costo nvarchar(50), @precio decimal(18,0), @idVuelo decimal(18,0)	
-		as																								--No se el idvuelo est· bien que lo agarre asÌ nomas o hace falta pasar el destino, la fecha, etc etc
+		as																								--No se el idvuelo est√° bien que lo agarre as√≠ nomas o hace falta pasar el destino, la fecha, etc etc
 		begin
 			if((Select COUNT(1) from Los_dateros.vuelo v where (v.id_vuelo= @idVuelo)) = 1) begin
 			declare @codigo as decimal(18,0) = ((Select TOP 1 pasaje_codigo from LOS_DATEROS.pasajes ORDER BY PASAJE_CODIGO desc) + 1)
 			INSERT INTO LOS_DATEROS.pasajes(PASAJE_CODIGO,PASAJE_PRECIO,PASAJE_COSTO,ID_VUELO) 
 			values(@codigo,@costo,@precio,@idVuelo)
 			end
+			else RAISERROR (  N'No pudo crear el Pasaje.', 10, 1)
 		end		
 	go
 	
+	----------------------------TEST--------------------------------------------------------
+	---------------------------------------------------------------------------------------- 
+
+	--select * from LOS_DATEROS.cliente
 
 
+	--		exec buscarCliente  1113288
 
+	--			exec buscarCliente  1113288
 
+	--		exec buscarCliente Mart√≠nez ,1112055
 
+	--			exec buscarCliente 1112055
 
-
-
+	--			exec buscarCliente Mart√≠nez 
