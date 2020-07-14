@@ -65,11 +65,17 @@ IF OBJECT_ID('datosHabitacion','P') IS NOT NULL
 IF OBJECT_ID('datosEmpresa','P') IS NOT NULL
 	DROP PROCEDURE datosEmpresa
 
+IF OBJECT_ID('datosPasaje','P') IS NOT NULL
+	DROP PROCEDURE datosPasaje
+
 IF OBJECT_ID('datosVentaHabitacion','P') IS NOT NULL
 	DROP PROCEDURE datosVentaHabitacion
 
 IF OBJECT_ID('datosCompraHabitacion','P') IS NOT NULL
 	DROP PROCEDURE datosCompraHabitacion
+
+IF OBJECT_ID('datosCompraPasaje','P') IS NOT NULL
+	DROP PROCEDURE datosCompraPasaje
 
 IF OBJECT_ID('LOS_DATEROS.Dimension_Cliente', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Dimension_Cliente]	
@@ -95,13 +101,19 @@ IF OBJECT_ID('LOS_DATEROS.Dimension_Habitacion', 'U') IS NOT NULL
 IF OBJECT_ID('LOS_DATEROS.Dimension_Empresa', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Dimension_Empresa]			
 
+IF OBJECT_ID('LOS_DATEROS.Dimension_Pasaje', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Dimension_Pasaje]			
+
+
 IF OBJECT_ID('LOS_DATEROS.Hecho_VentaHabitacion', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Hecho_VentaHabitacion]			
 
 IF OBJECT_ID('LOS_DATEROS.Hecho_CompraHabitacion', 'U') IS NOT NULL
-			DROP TABLE LOS_DATEROS.[Hecho_CompraHabitacion]			
+			DROP TABLE LOS_DATEROS.[Hecho_CompraHabitacion]	
+			
+IF OBJECT_ID('LOS_DATEROS.Hecho_CompraPasaje', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Hecho_CompraPasaje]						
 go
-
 
 ------------------ Creacion de tablas de dimension de hechos ------------------ 
 
@@ -162,6 +174,16 @@ CREATE TABLE [LOS_DATEROS].[Dimension_Empresa](
 			[EMPRESA_RAZON_SOCIAL] [nvarchar](255) not NULL,
 	) ON [PRIMARY]
 
+CREATE TABLE [LOS_DATEROS].[Dimension_Pasaje](				
+			[id_pasaje] [bigint] NOT NULL,
+			[PASAJE_CODIGO] [decimal](18, 0) NOT NULL,
+			[PASAJE_PRECIO] [decimal](18, 2) NOT NULL,
+			[PASAJE_COSTO] [decimal](18, 2) NOT NULL,
+			[ID_VUELO] [decimal](19, 0) NOT NULL,
+			[Cantidad_Butacas] [TinyINT] NOT NULL,
+			[ID_AVION] [bigint] NOT NULL
+	) ON [PRIMARY]
+
 CREATE TABLE [LOS_DATEROS].[Hecho_VentaHabitacion](			
 			[ID_COMPRA] [bigint] identity(1,1) not NULL,
 			[ID_CLIENTE] [bigint] not NULL,
@@ -173,12 +195,22 @@ CREATE TABLE [LOS_DATEROS].[Hecho_VentaHabitacion](
 
 CREATE TABLE [LOS_DATEROS].[Hecho_CompraHabitacion](		
 			[ID_COMPRA] [bigint] identity(1,1) not NULL,
-			[ID_EMPRESA] [bigint] not NULL,
+			[ID_EMPRESA] [bigint] NULL,
 			[id_FECHA] [bigint] not null,
 			[id_HABITACION] [bigint] not null,
 			[dias_Hospedaje] [decimal](18,0) not null,
 			[TOTAL_COMPRA] [decimal](18,0) not null
 	) ON [PRIMARY]
+
+CREATE TABLE [LOS_DATEROS].[Hecho_CompraPasaje](		
+			[ID_COMPRA] [bigint] identity(1,1) not NULL,
+			[ID_EMPRESA] [bigint] not NULL,
+			[id_FECHA] [bigint] not null,
+			[id_pasaje] [bigint] not null,
+			[TOTAL_COMPRA] [decimal](18,0) not null
+	) ON [PRIMARY]
+go
+
 ---------------------------------------------------------------
 go
 create Function cantCamas (@tipo nvarchar(50)) returns Integer
@@ -195,7 +227,7 @@ end
 go
 ---------------------------------------------------------------
 
------------------- Llenado de tablas de dimension y de hechos ------------------
+------------------ Procedures de llenado de tablas de dimension y de hechos ------------------
 
 create Procedure datosClientes
 as
@@ -313,6 +345,30 @@ begin
 end
 go
 
+create Procedure  datosPasaje 
+as
+begin 	
+		insert into [LOS_DATEROS].Dimension_Pasaje(ID_Pasaje ,PASAJE_CODIGO,PASAJE_PRECIO,PASAJE_COSTO,ID_VUELO,Cantidad_Butacas,ID_AVION) 
+		 select
+		dd.id_pasaje,
+		dd.PASAJE_CODIGO,
+		dd.PASAJE_PRECIO,
+		dd.PASAJE_COSTO,
+		dd.ID_VUELO,
+		dd.butacas,
+		dd.avion
+		from (
+				select p.id_pasaje,p.PASAJE_CODIGO,p.PASAJE_PRECIO,p.PASAJE_COSTO,p.ID_VUELO, count(distinct b.BUTACA_NUMERO) as 'butacas',
+				(select avi.ID_avion from LOS_DATEROS.Dimension_Aviones avi where avi.AVION_IDENTIFICADOR = a.AVION_IDENTIFICADOR) as 'avion'
+				from LOS_DATEROS.pasajes p join LOS_DATEROS.butacas b on b.id_pasaje = p.id_pasaje and b.id_butaca != 1
+				join LOS_DATEROS.avion a on a.id_avion = b.id_avion
+				where p.id_pasaje != 1
+				group by p.id_pasaje,p.PASAJE_CODIGO,p.PASAJE_COSTO,p.ID_VUELO,p.PASAJE_PRECIO,a.AVION_IDENTIFICADOR
+				
+		) dd
+end
+go
+
 create Procedure  datosVentaHabitacion 
 as
 begin 	
@@ -350,16 +406,41 @@ begin
 		dd.total
 		
 		from (
-				Select (Select e.ID_Empresa from Los_dateros.Dimension_Empresa e where emp.ID_EMPRESA = e.ID_Empresa) as 'Empresa',
+				Select es.ID_EMPRESA as 'Empresa',
 					   (Select ti.ID_TIEMPO from LOS_DATEROS.Dimension_Tiempo ti where com.COMPRA_FECHA = ti.FECHA) as 'fecha', 
 					   h.ID_HABITACION, es.ESTADIA_CANTIDAD_NOCHES,HABITACION_COSTO*es.ESTADIA_CANTIDAD_NOCHES as 'total'
-					from Los_dateros.empresa emp join 
-						LOS_DATEROS.compra com	on emp.ID_EMPRESA = com.ID_EMPRESA and com.ID_COMPRA != 1 join 
-						LOS_DATEROS.estadia es	on es.ID_ESTADIA = com.ID_ESTADIA and es.ID_ESTADIA != 1 join
+				from Los_dateros.estadia es join 
+						LOS_DATEROS.empresa emp	on es.id_empresa = emp.ID_EMPRESA and es.ID_ESTADIA != 1 join
+						LOS_DATEROS.compra com	on es.ID_ESTADIA = com.ID_ESTADIA and com.ID_COMPRA != 1 join 
 						LOS_DATEROS.habitacion h on h.ID_HABITACION = es.id_habitacion and h.ID_HABITACION != 1
-						where emp.ID_EMPRESA != 1 and emp.ID_EMPRESA != NULL
-						group by emp.ID_EMPRESA,COMPRA_FECHA,h.ID_HABITACION,es.ESTADIA_CANTIDAD_NOCHES,h.HABITACION_COSTO
+						where emp.ID_EMPRESA != 1
+						group by es.ID_EMPRESA,COMPRA_FECHA,h.ID_HABITACION,es.ESTADIA_CANTIDAD_NOCHES,h.HABITACION_COSTO
 			) dd
+end
+go
+
+create Procedure  datosCompraPasaje
+as
+begin 	
+		insert into [LOS_DATEROS].Hecho_CompraPasaje(ID_EMPRESA,id_FECHA,id_pasaje,TOTAL_COMPRA) 
+		 select
+		dd.Empresa,
+		dd.fecha,
+		dd.id_pasaje,
+		dd.total
+		
+		from (
+				Select distinct(pa.PASAJE_CODIGO) as 'pasaje', em.ID_EMPRESA as 'Empresa',
+				(Select t.ID_TIEMPO from LOS_DATEROS.Dimension_Tiempo t where t.FECHA = com.COMPRA_FECHA) as 'Fecha',
+				pa.id_pasaje,pa.PASAJE_COSTO as 'total'
+				from Los_dateros.butacas bu join 
+						LOS_DATEROS.pasajes pa	on pa.id_pasaje = bu.id_pasaje and pa.id_pasaje != 1 join
+						LOS_DATEROS.compra com	on bu.id_butaca = com.ID_BUTACA and com.ID_COMPRA != 1 join
+						LOS_DATEROS.empresa em on em.ID_EMPRESA = com.ID_EMPRESA and em.ID_EMPRESA != 1 
+						where bu.id_butaca != 1
+				
+			) dd
+
 end
 go
 
@@ -373,7 +454,7 @@ go
 	exec datosAvion
 	exec datosHabitacion
 	exec datosEmpresa
+	exec datosPasaje
 	exec datosVentaHabitacion
 	exec datosCompraHabitacion
-
-
+	exec datosCompraPasaje
