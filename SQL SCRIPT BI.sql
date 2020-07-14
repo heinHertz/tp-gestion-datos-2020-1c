@@ -75,9 +75,26 @@ go
 IF OBJECT_ID('datosClientes','P') IS NOT NULL
 	DROP PROCEDURE datosClientes
 
+IF OBJECT_ID('datosCiudad','P') IS NOT NULL
+	DROP PROCEDURE datosCiudad
+
+IF OBJECT_ID('datosEmpresa','P') IS NOT NULL
+	DROP PROCEDURE datosEmpresa
+
+
+
 
 IF OBJECT_ID('LOS_DATEROS.Dimension_Cliente', 'U') IS NOT NULL
-			DROP TABLE LOS_DATEROS.[Dimension_Cliente]		
+			DROP TABLE LOS_DATEROS.[Dimension_Cliente]	
+			
+
+IF OBJECT_ID('LOS_DATEROS.Dimension_Ciudad', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Dimension_Ciudad]	
+			
+
+IF OBJECT_ID('LOS_DATEROS.Dimension_Empresa', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Dimension_Empresa]		
+go
 
 CREATE TABLE [LOS_DATEROS].[Dimension_Cliente](				
 			[ID_CLIENTE] [bigint] not NULL,
@@ -89,12 +106,23 @@ CREATE TABLE [LOS_DATEROS].[Dimension_Cliente](
 			[CLIENTE_MAIL] [nvarchar](255) NULL
 	) ON [PRIMARY]
 
+	
+CREATE TABLE [LOS_DATEROS].[Dimension_Ciudad](				
+			[ID_CIUDAD] [bigint] not NULL,
+			[NOMBRE_CIUDAD]  [nvarchar](255) NULL
+	) ON [PRIMARY]
+
+	
+CREATE TABLE [LOS_DATEROS].[Dimension_Empresa](				
+			[ID_EMPRESA] [bigint] not NULL,
+			[EMPRESA_RAZON]  [nvarchar](255) NULL
+	) ON [PRIMARY]
 
 go
+
 create Procedure datosClientes
 as
 begin 
-
 
 		insert into [LOS_DATEROS].Dimension_Cliente([ID_CLIENTE] ,[CLIENTE_DNI] ,[CLIENTE_NOMBRE] ,	[CLIENTE_APELLIDO] ,[EDAD] ,[CLIENTE_TELEFONO] ,[CLIENTE_MAIL] ) 
 		 select
@@ -110,8 +138,48 @@ end
 go
 
 
+create Procedure  datosCiudad
+as
+begin 
+
+		insert into [LOS_DATEROS].Dimension_Ciudad([ID_CIUDAD] ,[NOMBRE_CIUDAD]) 
+		 select
+		cc.id_ciudad,
+		cc.nombre
+		from [LOS_DATEROS].ciudad cc  
+end
+go
+
+create Procedure  datosEmpresa
+as
+begin 
+
+		insert into [LOS_DATEROS].Dimension_Empresa([ID_EMPRESA] ,[EMPRESA_RAZON]) 
+		 select
+		ee.ID_EMPRESA,
+		ee.EMPRESA_RAZON_SOCIAL
+		from [LOS_DATEROS].empresa ee  
+end
+go
+
+	exec datosCiudad
 	exec datosClientes
+	exec datosEmpresa
 
 --		select * from [LOS_DATEROS].Dimension_Cliente
+
+
+--  select * from [LOS_DATEROS].Dimension_Empresa
+
+
+
+
+
+
+
+
+
+
+
 
 
