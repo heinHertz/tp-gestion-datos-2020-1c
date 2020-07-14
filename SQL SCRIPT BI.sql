@@ -122,7 +122,7 @@ CREATE TABLE [LOS_DATEROS].[Dimension_Tiempo](
 			[DIA] [TINYINT] null
 	) ON [PRIMARY]
 
-CREATE TABLE [LOS_DATEROS].[Dimension_TipoHabitaciones](				
+CREATE TABLE [LOS_DATEROS].[Dimension_TipoHabitaciones](	
 			[ID_TIPO_HABITACION] [bigint] not NULL,
 			[TIPO_HABITACION_DESC] [nvarchar](50)  NULL,
 			[TIPO_HABITACION_CODIGO] [decimal](18,0),
@@ -135,7 +135,7 @@ CREATE TABLE [LOS_DATEROS].[Dimension_Aviones](
 			[AVION_IDENTIFICADOR][nvarchar](50) null ,
 	) ON [PRIMARY]
 
-CREATE TABLE [LOS_DATEROS].[Dimension_Habitacion](				
+CREATE TABLE [LOS_DATEROS].[Dimension_Habitacion](			
 			[ID_HABITACION] [bigint] not NULL,
 			[HABITACION_NUMERO] [decimal](18, 0) NULL,
 			[HABITACION_PISO] [decimal](18, 0) NULL,
@@ -146,7 +146,7 @@ CREATE TABLE [LOS_DATEROS].[Dimension_Habitacion](
 			[ID_HOTEL][BIGINT] not null
 	) ON [PRIMARY]
 
-CREATE TABLE [LOS_DATEROS].[Hecho_VentaHabitacion](				
+CREATE TABLE [LOS_DATEROS].[Hecho_VentaHabitacion](			
 			[ID_COMPRA] [bigint] identity(1,1) not NULL,
 			[ID_CLIENTE] [bigint] not NULL,
 			[id_FECHA] [bigint] not null,
@@ -228,7 +228,8 @@ begin
 end
 go
 
-create Procedure  datosTipoHabitacion as
+create Procedure  datosTipoHabitacion 
+as
 begin 	
 		insert into [LOS_DATEROS].Dimension_TipoHabitaciones( ID_TIPO_HABITACION ,TIPO_HABITACION_DESC,TIPO_HABITACION_CODIGO, CANT_CAMAS) 
 		 select
@@ -242,7 +243,8 @@ begin
 end
 go
 
-create Procedure  datosAvion as
+create Procedure  datosAvion 
+as
 begin 	
 		insert into [LOS_DATEROS].Dimension_Aviones( ID_avion ,Avion_modelo,AVION_IDENTIFICADOR) 
 		 select
@@ -255,7 +257,8 @@ begin
 end
 go
 
-create Procedure  datosHabitacion as
+create Procedure  datosHabitacion 
+as
 begin 	
 		insert into [LOS_DATEROS].Dimension_Habitacion( ID_HABITACION ,HABITACION_NUMERO,HABITACION_PISO,HABITACION_FRENTE,HABITACION_PRECIO,HABITACION_COSTO,HABITACION_CAMAS,ID_HOTEL) 
 		 select
@@ -273,8 +276,8 @@ begin
 end
 go
 
-go
-create Procedure  datosVentaHabitacion as
+create Procedure  datosVentaHabitacion 
+as
 begin 	
 		insert into [LOS_DATEROS].Hecho_VentaHabitacion( ID_Cliente,id_FECHA,id_Habitacion,dias_Hospedaje,TOTAL_COMPRA) 
 		 select
@@ -287,7 +290,7 @@ begin
 		from (
 				Select (Select cli.ID_CLIENTE from Los_dateros.Dimension_cliente cli where c.ID_CLIENTE = cli.ID_CLIENTE) as 'cliente',
 					   (Select ti.ID_TIEMPO from LOS_DATEROS.Dimension_Tiempo ti where com.COMPRA_FECHA = ti.FECHA) as 'fecha', 
-					   h.ID_HABITACION, es.ESTADIA_CANTIDAD_NOCHES,HABITACION_COSTO*es.ESTADIA_CANTIDAD_NOCHES as 'total'
+					   h.ID_HABITACION, es.ESTADIA_CANTIDAD_NOCHES,HABITACION_PRECIO*es.ESTADIA_CANTIDAD_NOCHES as 'total'
 					from Los_dateros.cliente c join 
 						LOS_DATEROS.factura f on f.id_cliente = c.ID_CLIENTE and f.id_cliente != 1 join
 						LOS_DATEROS.compra com	on f.id_compra = com.COMPRA_NUMERO and com.ID_COMPRA != 1 join 
