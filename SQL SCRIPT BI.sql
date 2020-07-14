@@ -5,39 +5,7 @@ GO
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
-GO
-
---create procedure clientesVentasHabitacion
---AS
---begin
-
---Select c.ID_CLIENTE, c.CLIENTE_NOMBRE,c.CLIENTE_APELLIDO,MONTH(com.COMPRA_FECHA)as "Mes",Year(com.COMPRA_FECHA), SUM(h.HABITACION_PRECIO*es.ESTADIA_CANTIDAD_NOCHES) AS "Total vendido por habitaciones" 
---from Los_dateros.cliente c join 
---	LOS_DATEROS.factura f on f.id_cliente = c.ID_CLIENTE and f.id_cliente != 1 join
---	LOS_DATEROS.compra com	on f.compra_Numero = com.COMPRA_NUMERO and com.ID_COMPRA != 1 join 
---	LOS_DATEROS.estadia es	on es.ID_ESTADIA = com.ID_ESTADIA and es.ID_ESTADIA != 1 join
---	LOS_DATEROS.habitacion h on h.ID_HABITACION = es.id_habitacion and h.ID_HABITACION != 1
---	group by c.ID_CLIENTE,c.CLIENTE_NOMBRE,c.CLIENTE_APELLIDO
---	order by 5 desc
---end
---go
-
---go
---create Procedure ClientesVentasPasajes
---as
---begin 
---SELECT c.ID_CLIENTE, c.CLIENTE_NOMBRE,c.CLIENTE_APELLIDO,MonTH(com.COMPRA_FECHA) as "Mes",Year(com.COMPRA_FECHA), SUM(p.PASAJE_COSTO) as "Total vendido por pasajes" 
---from Los_dateros.cliente c join 
---	LOS_DATEROS.factura f on f.id_cliente = c.ID_CLIENTE and f.id_cliente != 1 join
---	LOS_DATEROS.compra com	on f.compra_Numero = com.COMPRA_NUMERO and com.ID_COMPRA != 1 join
---	Los_Dateros.butacas b on b.id_butaca = com.ID_BUTACA and b.id_butaca != 1 join
---	LOS_DATEROS.pasajes p on p.id_pasaje = b.id_butaca and p.id_pasaje != 1 
---	group by c.ID_CLIENTE, c.CLIENTE_NOMBRE,c.CLIENTE_APELLIDO, COM.COMPRA_FECHA
---	order by 4 desc
---end
---go
-
---Select count(1), MONTH(C.COMPRA_FECHA) AS "MES" from LOS_DATEROS.compra C where c.ID_EMPRESA != 1 group by MONTH(C.COMPRA_FECHA) 
+GO 
 
 ------------------ Drops de Procedures y Tablas ------------------
 
@@ -73,6 +41,9 @@ IF OBJECT_ID('datosVentaHabitacion','P') IS NOT NULL
 
 IF OBJECT_ID('datosCompraHabitacion','P') IS NOT NULL
 	DROP PROCEDURE datosCompraHabitacion
+
+IF OBJECT_ID('datosVentaPasaje','P') IS NOT NULL
+	DROP PROCEDURE datosVentaPasaje
 
 IF OBJECT_ID('datosCompraPasaje','P') IS NOT NULL
 	DROP PROCEDURE datosCompraPasaje
@@ -110,6 +81,9 @@ IF OBJECT_ID('LOS_DATEROS.Hecho_VentaHabitacion', 'U') IS NOT NULL
 
 IF OBJECT_ID('LOS_DATEROS.Hecho_CompraHabitacion', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Hecho_CompraHabitacion]	
+		
+IF OBJECT_ID('LOS_DATEROS.Hecho_VentaPasaje', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Hecho_VentaPasaje]						
 			
 IF OBJECT_ID('LOS_DATEROS.Hecho_CompraPasaje', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Hecho_CompraPasaje]						
@@ -201,6 +175,15 @@ CREATE TABLE [LOS_DATEROS].[Hecho_CompraHabitacion](
 			[dias_Hospedaje] [decimal](18,0) not null,
 			[TOTAL_COMPRA] [decimal](18,0) not null
 	) ON [PRIMARY]
+
+CREATE TABLE [LOS_DATEROS].[Hecho_VentaPasaje](			
+			[ID_COMPRA] [bigint] identity(1,1) not NULL,
+			[ID_CLIENTE] [bigint] not NULL,
+			[id_FECHA] [bigint] not null,
+			[id_pasaje] [bigint] not null,
+			[TOTAL_COMPRA] [decimal](18,0) not null
+	) ON [PRIMARY]
+
 
 CREATE TABLE [LOS_DATEROS].[Hecho_CompraPasaje](		
 			[ID_COMPRA] [bigint] identity(1,1) not NULL,
@@ -409,7 +392,7 @@ begin
 				Select es.ID_EMPRESA as 'Empresa',
 					   (Select ti.ID_TIEMPO from LOS_DATEROS.Dimension_Tiempo ti where com.COMPRA_FECHA = ti.FECHA) as 'fecha', 
 					   h.ID_HABITACION, es.ESTADIA_CANTIDAD_NOCHES,HABITACION_COSTO*es.ESTADIA_CANTIDAD_NOCHES as 'total'
-				from Los_dateros.estadia es join 
+		 		from Los_dateros.estadia es join 
 						LOS_DATEROS.empresa emp	on es.id_empresa = emp.ID_EMPRESA and es.ID_ESTADIA != 1 join
 						LOS_DATEROS.compra com	on es.ID_ESTADIA = com.ID_ESTADIA and com.ID_COMPRA != 1 join 
 						LOS_DATEROS.habitacion h on h.ID_HABITACION = es.id_habitacion and h.ID_HABITACION != 1
@@ -418,6 +401,35 @@ begin
 			) dd
 end
 go
+
+create Procedure  datosVentaPasaje --Funca mal :(
+as
+begin 	
+		insert into [LOS_DATEROS].Hecho_VentaPasaje( ID_Cliente,id_FECHA,id_pasaje,TOTAL_COMPRA) 
+		 select
+		dd.cliente,
+		dd.fecha,
+		dd.pasaje,
+		dd.total
+		
+		from (
+				Select distinct(pa.PASAJE_CODIGO) as 'pasaje',
+						c.ID_CLIENTE as 'cliente',
+					   (Select ti.ID_TIEMPO from LOS_DATEROS.Dimension_Tiempo ti where com.COMPRA_FECHA = ti.FECHA) as 'fecha',
+						pa.PASAJE_Precio as 'total'
+				 from Los_dateros.butacas bu join 
+						LOS_DATEROS.pasajes pa	on pa.id_pasaje = bu.id_pasaje join
+						LOS_DATEROS.compra com	on bu.id_butaca = com.ID_BUTACA join 
+						LOS_DATEROS.factura f on f.id_compra = com.COMPRA_NUMERO and f.ID_FACTURA != 1 join
+						LOS_DATEROS.cliente c on c.ID_CLIENTE = f.id_cliente 
+					where bu.id_butaca != 1
+					group by bu.id_butaca, pa.id_pasaje,pa.PASAJE_CODIGO,c.ID_CLIENTE,com.COMPRA_FECHA,pa.PASAJE_PRECIO
+					) dd
+				
+end
+go
+
+
 
 create Procedure  datosCompraPasaje
 as
@@ -430,7 +442,7 @@ begin
 		dd.total
 		
 		from (
-				Select distinct(pa.PASAJE_CODIGO) as 'pasaje', em.ID_EMPRESA as 'Empresa',
+				Select distinct pa.PASAJE_CODIGO as 'pasaje', em.ID_EMPRESA as 'Empresa',
 				(Select t.ID_TIEMPO from LOS_DATEROS.Dimension_Tiempo t where t.FECHA = com.COMPRA_FECHA) as 'Fecha',
 				pa.id_pasaje,pa.PASAJE_COSTO as 'total'
 				from Los_dateros.butacas bu join 
@@ -458,3 +470,19 @@ go
 	exec datosVentaHabitacion
 	exec datosCompraHabitacion
 	exec datosCompraPasaje
+	
+	-- exec datosVentaPasaje No se que le pasa a este que tarda un monton y genera millones de compras literalmente
+
+------------------ Views de ejemplo ------------------
+	
+go
+	create view calculosSobreMeses as
+		select Year(t.FECHA) as 'Año',MONTH(t.FECHA) as 'Mes',SUM(hc.TOTAL_COMPRA)as 'Total compra del mes',
+		MAX(hc.Total_compra) 'Maximo de una compra',AVG(hc.Total_compra) 'Promedio de compras', SUM(hv.TOTAL_VENTA) 'Total ventas del mes', Max(hv.TOTAL_VENTA) 'Máxima venta del mes',
+		Avg(hv.TOTAL_VENTA) 'Promedio de ventas',sum(hv.TOTAL_VENTA-hc.TOTAL_COMPRA)'Ganancia total', SUM(h.HABITACION_CAMAS*hv.dias_Hospedaje) 'Total de camas vendidas(x noche)', avg(h.HABITACION_CAMAS) 'Promedio camas(x estadía)'
+		from LOS_dateros.Hecho_CompraHabitacion  hc join LOS_DATEROS.Dimension_Tiempo t on hc.id_FECHA = t.ID_TIEMPO join 
+		los_dateros.Hecho_VentaHabitacion hv on hc.id_HABITACION = hv.id_HABITACION join
+		LOS_DATEROS.Dimension_Habitacion h on h.ID_HABITACION=hv.id_HABITACION
+		group by Month(t.FECHA),YEAR(t.FECHA)
+		order by 1,2 asc 
+go
