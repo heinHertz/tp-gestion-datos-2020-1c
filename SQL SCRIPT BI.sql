@@ -78,8 +78,11 @@ IF OBJECT_ID('datosClientes','P') IS NOT NULL
 IF OBJECT_ID('datosCiudad','P') IS NOT NULL
 	DROP PROCEDURE datosCiudad
 
-IF OBJECT_ID('datosEmpresa','P') IS NOT NULL
-	DROP PROCEDURE datosEmpresa
+IF OBJECT_ID('datosProveedores','P') IS NOT NULL
+	DROP PROCEDURE datosProveedores
+
+IF OBJECT_ID('datosTiempo','P') IS NOT NULL
+	DROP PROCEDURE datosTiempo
 
 
 
@@ -92,8 +95,13 @@ IF OBJECT_ID('LOS_DATEROS.Dimension_Ciudad', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Dimension_Ciudad]	
 			
 
-IF OBJECT_ID('LOS_DATEROS.Dimension_Empresa', 'U') IS NOT NULL
-			DROP TABLE LOS_DATEROS.[Dimension_Empresa]		
+IF OBJECT_ID('LOS_DATEROS.Dimension_Proveedores', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Dimension_Proveedores]		
+			
+IF OBJECT_ID('LOS_DATEROS.Dimension_Tiempo', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Dimension_Tiempo]		
+
+
 go
 
 CREATE TABLE [LOS_DATEROS].[Dimension_Cliente](				
@@ -112,10 +120,21 @@ CREATE TABLE [LOS_DATEROS].[Dimension_Ciudad](
 			[NOMBRE_CIUDAD]  [nvarchar](255) NULL
 	) ON [PRIMARY]
 
+
 	
-CREATE TABLE [LOS_DATEROS].[Dimension_Empresa](				
+CREATE TABLE [LOS_DATEROS].[Dimension_Proveedores](			
 			[ID_EMPRESA] [bigint] not NULL,
 			[EMPRESA_RAZON]  [nvarchar](255) NULL
+	) ON [PRIMARY]
+
+go
+
+CREATE TABLE [LOS_DATEROS].[Dimension_Tiempo](				
+			[ID_TIEMPO] [bigint] identity(1,1) not NULL,
+			[FECHA] [datetime2](3)  NULL,
+			[MES] [TINYINT]  NULL,
+			[ANIO] smallint  NULL,
+			[DIA] [TINYINT] null
 	) ON [PRIMARY]
 
 go
@@ -150,11 +169,11 @@ begin
 end
 go
 
-create Procedure  datosEmpresa
+create Procedure  datosProveedores
 as
 begin 
 
-		insert into [LOS_DATEROS].Dimension_Empresa([ID_EMPRESA] ,[EMPRESA_RAZON]) 
+		insert into [LOS_DATEROS].Dimension_Proveedores([ID_EMPRESA] ,[EMPRESA_RAZON]) 
 		 select
 		ee.ID_EMPRESA,
 		ee.EMPRESA_RAZON_SOCIAL
@@ -162,24 +181,23 @@ begin
 end
 go
 
+create Procedure  datosTiempo
+as
+begin 
+
+		
+		insert into [LOS_DATEROS].Dimension_Tiempo( FECHA , ANIO, MES, DIA) 
+		 select
+		dd.COMPRA_FECHA ,
+		datepart(year, dd.COMPRA_FECHA),
+		DATEPART(MONTH, dd.COMPRA_FECHA),
+		DATEPART(DAY, dd.COMPRA_FECHA)
+		from (
+				select cc.COMPRA_FECHA from [LOS_DATEROS].compra cc group by cc.COMPRA_FECHA order by cc.COMPRA_FECHA offset 0 rows
+			) dd
+end
+go
 	exec datosCiudad
 	exec datosClientes
-	exec datosEmpresa
-
---		select * from [LOS_DATEROS].Dimension_Cliente
-
-
---  select * from [LOS_DATEROS].Dimension_Empresa
-
-
-
-
-
-
-
-
-
-
-
-
-
+	exec datosProveedores
+	exec datosTiempo
