@@ -37,8 +37,6 @@ GO
 --end
 --go
 
---select DATEDIFF(YEAR,cc.CLIENTE_FECHA_NAC,GETDATE()) from [LOS_DATEROS].cliente cc order by DATEDIFF(YEAR,cc.CLIENTE_FECHA_NAC,GETDATE()) where  cc.CLIENTE_DNI='1138084'
-
 --Select count(1), MONTH(C.COMPRA_FECHA) AS "MES" from LOS_DATEROS.compra C where c.ID_EMPRESA != 1 group by MONTH(C.COMPRA_FECHA) 
 
 ------------------ Drops de Procedures y Tablas ------------------
@@ -64,8 +62,14 @@ IF OBJECT_ID('datosAvion','P') IS NOT NULL
 IF OBJECT_ID('datosHabitacion','P') IS NOT NULL
 	DROP PROCEDURE datosHabitacion
 
+IF OBJECT_ID('datosEmpresa','P') IS NOT NULL
+	DROP PROCEDURE datosEmpresa
+
 IF OBJECT_ID('datosVentaHabitacion','P') IS NOT NULL
 	DROP PROCEDURE datosVentaHabitacion
+
+IF OBJECT_ID('datosCompraHabitacion','P') IS NOT NULL
+	DROP PROCEDURE datosCompraHabitacion
 
 IF OBJECT_ID('LOS_DATEROS.Dimension_Cliente', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Dimension_Cliente]	
@@ -88,9 +92,16 @@ IF OBJECT_ID('LOS_DATEROS.Dimension_Aviones', 'U') IS NOT NULL
 IF OBJECT_ID('LOS_DATEROS.Dimension_Habitacion', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Dimension_Habitacion]			
 
+IF OBJECT_ID('LOS_DATEROS.Dimension_Empresa', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Dimension_Empresa]			
+
 IF OBJECT_ID('LOS_DATEROS.Hecho_VentaHabitacion', 'U') IS NOT NULL
 			DROP TABLE LOS_DATEROS.[Hecho_VentaHabitacion]			
+
+IF OBJECT_ID('LOS_DATEROS.Hecho_CompraHabitacion', 'U') IS NOT NULL
+			DROP TABLE LOS_DATEROS.[Hecho_CompraHabitacion]			
 go
+
 
 ------------------ Creacion de tablas de dimension de hechos ------------------ 
 
@@ -137,13 +148,18 @@ CREATE TABLE [LOS_DATEROS].[Dimension_Aviones](
 
 CREATE TABLE [LOS_DATEROS].[Dimension_Habitacion](			
 			[ID_HABITACION] [bigint] not NULL,
-			[HABITACION_NUMERO] [decimal](18, 0) NULL,
-			[HABITACION_PISO] [decimal](18, 0) NULL,
-			[HABITACION_FRENTE] [nvarchar](50) NULL,
-			[HABITACION_PRECIO] [decimal](18, 2) NULL,
-			[HABITACION_COSTO] [decimal](18, 2) NULL,
-			[HABITACION_CAMAS] [TINYINT] NULL,
+			[HABITACION_NUMERO] [decimal](18, 0)  not NULL,
+			[HABITACION_PISO] [decimal](18, 0) not NULL,
+			[HABITACION_FRENTE] [nvarchar](50) not NULL,
+			[HABITACION_PRECIO] [decimal](18, 2) not NULL,
+			[HABITACION_COSTO] [decimal](18, 2) not NULL,
+			[HABITACION_CAMAS] [TINYINT] not NULL,
 			[ID_HOTEL][BIGINT] not null
+	) ON [PRIMARY]
+
+CREATE TABLE [LOS_DATEROS].[Dimension_Empresa](				
+			[ID_Empresa] [bigint] not NULL,
+			[EMPRESA_RAZON_SOCIAL] [nvarchar](255) not NULL,
 	) ON [PRIMARY]
 
 CREATE TABLE [LOS_DATEROS].[Hecho_VentaHabitacion](			
@@ -152,9 +168,17 @@ CREATE TABLE [LOS_DATEROS].[Hecho_VentaHabitacion](
 			[id_FECHA] [bigint] not null,
 			[id_HABITACION] [bigint] not null,
 			[dias_Hospedaje] [decimal](18,0) not null,
-			[TOTAL_COMPRA] [decimal](18,0) not null
+			[TOTAL_VENTA] [decimal](18,0) not null
 	) ON [PRIMARY]
 
+CREATE TABLE [LOS_DATEROS].[Hecho_CompraHabitacion](		
+			[ID_COMPRA] [bigint] identity(1,1) not NULL,
+			[ID_EMPRESA] [bigint] not NULL,
+			[id_FECHA] [bigint] not null,
+			[id_HABITACION] [bigint] not null,
+			[dias_Hospedaje] [decimal](18,0) not null,
+			[TOTAL_COMPRA] [decimal](18,0) not null
+	) ON [PRIMARY]
 ---------------------------------------------------------------
 go
 create Function cantCamas (@tipo nvarchar(50)) returns Integer
@@ -271,7 +295,20 @@ begin
 		dd.CANT_CAMAS,
 		dd.id_hotel
 		from (
-				select h.ID_HABITACION,h.HABITACION_NUMERO,h.HABITACION_PISO,h.HABITACION_FRENTE,h.HABITACION_PreciO,h.HABITACION_COSTO,t.CANT_CAMAS,h.id_hotel from [LOS_DATEROS].habitacion h join LOS_DATEROS.Dimension_TipoHabitaciones t on h.id_tipo_habitacion = t.ID_TIPO_HABITACION
+				select h.ID_HABITACION,h.HABITACION_NUMERO,h.HABITACION_PISO,h.HABITACION_FRENTE,h.HABITACION_PreciO,h.HABITACION_COSTO,t.CANT_CAMAS,h.id_hotel from [LOS_DATEROS].habitacion h join LOS_DATEROS.Dimension_TipoHabitaciones t on h.id_tipo_habitacion = t.ID_TIPO_HABITACION where h.ID_HABITACION != 1
+			) dd
+end
+go
+
+create Procedure  datosEmpresa
+as
+begin 	
+		insert into [LOS_DATEROS].Dimension_Empresa( ID_Empresa ,EMPRESA_RAZON_SOCIAL) 
+		 select
+		dd.ID_Empresa,
+		dd.EMPRESA_RAZON_SOCIAL
+		from (
+				select * from LOS_DATEROS.Dimension_Empresa
 			) dd
 end
 go
@@ -279,7 +316,7 @@ go
 create Procedure  datosVentaHabitacion 
 as
 begin 	
-		insert into [LOS_DATEROS].Hecho_VentaHabitacion( ID_Cliente,id_FECHA,id_Habitacion,dias_Hospedaje,TOTAL_COMPRA) 
+		insert into [LOS_DATEROS].Hecho_VentaHabitacion( ID_Cliente,id_FECHA,id_Habitacion,dias_Hospedaje,TOTAL_VENTA) 
 		 select
 		dd.cliente,
 		dd.fecha,
@@ -296,7 +333,32 @@ begin
 						LOS_DATEROS.compra com	on f.id_compra = com.COMPRA_NUMERO and com.ID_COMPRA != 1 join 
 						LOS_DATEROS.estadia es	on es.ID_ESTADIA = com.ID_ESTADIA and es.ID_ESTADIA != 1 join
 						LOS_DATEROS.habitacion h on h.ID_HABITACION = es.id_habitacion and h.ID_HABITACION != 1
-						group by c.ID_CLIENTE,COMPRA_FECHA,h.ID_HABITACION,es.ESTADIA_CANTIDAD_NOCHES,h.HABITACION_COSTO
+						group by c.ID_CLIENTE,COMPRA_FECHA,h.ID_HABITACION,es.ESTADIA_CANTIDAD_NOCHES,h.HABITACION_PRECIO
+			) dd
+end
+go
+
+create Procedure  datosCompraHabitacion 
+as
+begin 	
+		insert into [LOS_DATEROS].Hecho_CompraHabitacion(ID_EMPRESA,id_FECHA,id_Habitacion,dias_Hospedaje,TOTAL_COMPRA) 
+		 select
+		dd.Empresa,
+		dd.fecha,
+		dd.ID_HABITACION,
+		dd.ESTADIA_CANTIDAD_NOCHES,
+		dd.total
+		
+		from (
+				Select (Select e.ID_Empresa from Los_dateros.Dimension_Empresa e where emp.ID_EMPRESA = e.ID_Empresa) as 'Empresa',
+					   (Select ti.ID_TIEMPO from LOS_DATEROS.Dimension_Tiempo ti where com.COMPRA_FECHA = ti.FECHA) as 'fecha', 
+					   h.ID_HABITACION, es.ESTADIA_CANTIDAD_NOCHES,HABITACION_COSTO*es.ESTADIA_CANTIDAD_NOCHES as 'total'
+					from Los_dateros.empresa emp join 
+						LOS_DATEROS.compra com	on emp.ID_EMPRESA = com.ID_EMPRESA and com.ID_COMPRA != 1 join 
+						LOS_DATEROS.estadia es	on es.ID_ESTADIA = com.ID_ESTADIA and es.ID_ESTADIA != 1 join
+						LOS_DATEROS.habitacion h on h.ID_HABITACION = es.id_habitacion and h.ID_HABITACION != 1
+						where emp.ID_EMPRESA != 1 and emp.ID_EMPRESA != NULL
+						group by emp.ID_EMPRESA,COMPRA_FECHA,h.ID_HABITACION,es.ESTADIA_CANTIDAD_NOCHES,h.HABITACION_COSTO
 			) dd
 end
 go
@@ -310,6 +372,8 @@ go
 	exec datosTipoHabitacion
 	exec datosAvion
 	exec datosHabitacion
+	exec datosEmpresa
 	exec datosVentaHabitacion
+	exec datosCompraHabitacion
 
 
